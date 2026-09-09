@@ -28,6 +28,9 @@ services:
       
       # 2. Montaje del script SQL en la carpeta interna donde Postgres ejecuta scripts de inicialización
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      
+      # Se agrega el montaje de la carpeta migrations completa:
+      - ./migrations:/docker-entrypoint-initdb.d/migrations:ro
 
     # Verificación de salud (Health check) para confirmar que la BD está lista y aceptando conexiones
     healthcheck:
