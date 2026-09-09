@@ -1,0 +1,7 @@
+# Archivo de variables de entorno reales (contiene contraseñas sensibles)
+.env
+
+# Datos locales del sistema operativo o editores de codigo
+.DS_Store
+.vscode/
+.idea/

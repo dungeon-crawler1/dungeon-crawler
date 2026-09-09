@@ -1,0 +1,43 @@
+# Definición de la versión de especificación de Docker Compose
+services:
+  # Nombre del servicio en Docker Compose
+  database:
+    # Imagen oficial de PostgreSQL optimizada (Alpine Linux)
+    image: postgres:16-alpine
+    
+    # Nombre personalizado para identificar fácilmente el contenedor en 'docker ps'
+    container_name: roguelike_postgres_db
+    
+    # Política de reinicio: Si el contenedor falla o la PC se reinicia, Docker lo vuelve a levantar
+    restart: always
+    
+    # Inyección de variables de entorno leídas desde el archivo .env local
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      
+    # Mapeo de puertos: [Puerto de tu máquina host] : [Puerto interno del contenedor]
+    ports:
+      - "${POSTGRES_PORT}:5432"
+      
+    # Montaje de volúmenes para persistencia de datos y scripts de inicio
+    volumes:
+      # 1. Volumen nombrado para mantener la BD guardada físicamente fuera del contenedor
+      - postgres_data:/var/lib/postgresql/data
+      
+      # 2. Montaje del script SQL en la carpeta interna donde Postgres ejecuta scripts de inicialización
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    # Verificación de salud (Health check) para confirmar que la BD está lista y aceptando conexiones
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s    # Ejecutar la prueba cada 10 segundos
+      timeout: 5s      # Tiempo máximo de espera de respuesta
+      retries: 5       # Intentos fallidos consecutivos antes de marcar 'unhealthy'
+      start_period: 10s # Tiempo inicial de gracia mientras inicia Postgres
+
+# Declaración explícita de volúmenes persistentes gestionados por Docker
+volumes:
+  postgres_data:
+    driver: local
