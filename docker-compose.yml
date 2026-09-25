@@ -21,13 +21,16 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
       
-    # Montaje de volúmenes para persistencia de datos y scripts de inicio
+    # Montaje de volumenes para persistencia de datos y scripts de inicio
     volumes:
       # 1. Volumen nombrado para mantener la BD guardada físicamente fuera del contenedor
       - postgres_data:/var/lib/postgresql/data
       
       # 2. Montaje del script SQL en la carpeta interna donde Postgres ejecuta scripts de inicialización
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      
+      # Se agrega el montaje de la carpeta migrations completa:
+      - ./migrations:/docker-entrypoint-initdb.d/migrations:ro
 
     # Verificación de salud (Health check) para confirmar que la BD está lista y aceptando conexiones
     healthcheck:
