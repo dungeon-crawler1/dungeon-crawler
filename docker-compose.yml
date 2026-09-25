@@ -21,7 +21,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
       
-    # Montaje de volúmenes para persistencia de datos y scripts de inicio
+    # Montaje de volumenes para persistencia de datos y scripts de inicio
     volumes:
       # 1. Volumen nombrado para mantener la BD guardada físicamente fuera del contenedor
       - postgres_data:/var/lib/postgresql/data
