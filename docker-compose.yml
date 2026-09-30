@@ -40,6 +40,27 @@ services:
       retries: 5       # Intentos fallidos consecutivos antes de marcar 'unhealthy'
       start_period: 10s # Tiempo inicial de gracia mientras inicia Postgres
 
+  backend-express:
+    build:
+      context: ./backend-express
+      dockerfile: Dockerfile
+    container_name: roguelike_backend_express
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      JWT_SECRET: super_secret_jwt_key_roguelike_2026
+      JWT_EXPIRES_IN: 24h
+    depends_on:
+      database:
+        condition: service_healthy
+
 # Declaración explícita de volúmenes persistentes gestionados por Docker
 volumes:
   postgres_data:
