@@ -1,3 +1,10 @@
+<!-- calidad:inicio -->
+![Calidad](https://img.shields.io/badge/Calidad-47%2F100-orange) ![Cumple](https://img.shields.io/badge/Cumple-11%2F15-yellow) ![Aprobado](https://img.shields.io/badge/Aprobado-NO-red)
+
+**Calidad de servicios (heurístico):** índice **47/100** · cumple **11/15** · aprobado **NO** · capas **2**
+`SEC 0 · SQL 0 · DBG 2 · duplicación 8.1% · endpoints 4 · tests 0`
+<!-- calidad:fin -->
+
 # dungeon-crawler
 proyecto final de programacion 3
 
