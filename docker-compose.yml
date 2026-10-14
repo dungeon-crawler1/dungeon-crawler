@@ -60,6 +60,25 @@ services:
     depends_on:
       database:
         condition: service_healthy
+  
+  backend-fastapi:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: roguelike_backend_fastapi
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      JWT_SECRET: super_secret_jwt_key_roguelike_2026
+    depends_on:
+      database:
+        condition: service_healthy
 
 # Declaración explícita de volúmenes persistentes gestionados por Docker
 volumes:
