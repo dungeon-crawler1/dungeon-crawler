@@ -1,46 +1,51 @@
+# Diagrama Entidad-Relación (DER) - Videojuego Roguelike
+
+Este documento define la estructura de las tablas del sistema para el almacenamiento de usuarios, partidas (runs), reliquias y la línea de tiempo interactiva.
+
+```mermaid
 erDiagram
     USUARIOS ||--o{ PARTIDAS : "realiza (1:N)"
     PARTIDAS ||--o{ RELIQUIAS_PARTIDA : "obtiene (1:N)"
     PARTIDAS ||--o{ HABITACIONES_PARTIDA : "registra (1:N)"
 
     USUARIOS {
-        int id PK "Identificador único de usuario"
-        string username UK "Nombre único de usuario"
+        int id PK "Identificador único auto-incremental"
+        string username UK "Nombre de usuario único"
         string email UK "Correo electrónico único"
         string password_hash "Contraseña encriptada con bcrypt"
-        timestamp fecha_registro "Fecha de alta"
+        timestamp fecha_registro "Fecha de creación del usuario"
     }
 
     PARTIDAS {
         int id PK "Identificador único de la partida"
-        int usuario_id FK "Usuario que jugó la partida"
+        int usuario_id FK "Relación con el usuario"
         string clase "Clase elegida (Caballero, Bárbaro, Pícaro, Mago)"
-        int puntuacion "Cantidad de habitaciones superadas"
+        int puntuacion "Puntos totales (habitaciones superadas)"
         int duracion_segundos "Tiempo total jugado"
-        int monedas_obtenidas "Monedas ganadas"
-        int monedas_gastadas "Monedas gastadas en tiendas"
-        int danio_infligido "Daño total causado"
-        int danio_recibido "Daño total recibido"
-        int enemigos_derrotados "Enemigos comunes/élite derrotados"
+        int monedas_obtenidas "Monedas recolectadas"
+        int monedas_gastadas "Monedas gastadas"
+        int danio_infligido "Daño infligido total"
+        int danio_recibido "Daño recibido total"
+        int enemigos_derrotados "Enemigos normales o élite derrotados"
         int jefes_derrotados "Jefes finales derrotados"
-        string resultado "Resultado final (DERROTA o RETIRO)"
-        timestamp fecha_partida "Fecha y hora de la partida"
+        string resultado "Estado final ('DERROTA' o 'RETIRO')"
+        timestamp fecha_partida "Estampa de tiempo del juego"
     }
 
     RELIQUIAS_PARTIDA {
         int id PK "Identificador de la reliquia obtenida"
-        int partida_id FK "Partida asociada"
-        string nombre_reliquia "Nombre único de la reliquia"
+        int partida_id FK "Relación con la partida"
+        string nombre_reliquia "Nombre de la reliquia"
         string efecto "Efecto o ventaja otorgada"
-        int habitacion_obtenida "Número de habitación en la que se obtuvo"
+        int habitacion_obtenida "Número de habitación en la que se compró/obtuvo"
     }
 
     HABITACIONES_PARTIDA {
-        int id PK "Identificador del paso"
-        int partida_id FK "Partida asociada"
-        int numero_habitacion "Orden de la habitación (1, 2, 3...)"
-        string tipo_evento "Tipo (combate, mercader, fuente_deseos, estatua, etc.)"
-        jsonb detalle_evento "Metadatos detallados en formato JSONB"
-        string resultado "Resultado del evento (ej: completado, victoria, huyó)"
-        timestamp registrado_en "Estampa de tiempo del evento"
+        int id PK "Identificador del evento"
+        int partida_id FK "Relación con la partida"
+        int numero_habitacion "Orden correlativo de la habitación"
+        string tipo_evento "Tipo de habitación"
+        jsonb detalle_evento "Detalles técnicos guardados en formato JSONB"
+        string resultado "Resultado de la habitación"
+        timestamp registrado_en "Estampa de tiempo"
     }

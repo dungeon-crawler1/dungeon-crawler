@@ -1,7 +1,19 @@
-# Archivo de variables de entorno reales (contiene contraseñas sensibles)
+# Archivos de variables de entorno reales (seguridad: nunca subir a Git)
 .env
+*.env.local
 
-# Datos locales del sistema operativo o editores de codigo
+# Dependencias de Node.js
+node_modules/
+npm-debug.log*
+
+# Archivos de caché y entornos virtuales de Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+ENV/
+
+# Archivos del sistema operativo e IDEs
 .DS_Store
 .vscode/
 .idea/
