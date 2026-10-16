@@ -1,45 +1,31 @@
-# Definición de la versión de especificación de Docker Compose
+# Especificación de orquestación para contenedores Docker
 services:
-  # Nombre del servicio en Docker Compose
+  # Servicio 1: Motor de Base de Datos Relacional PostgreSQL
   database:
-    # Imagen oficial de PostgreSQL optimizada (Alpine Linux)
     image: postgres:16-alpine
-    
-    # Nombre personalizado para identificar fácilmente el contenedor en 'docker ps'
     container_name: roguelike_postgres_db
-    
-    # Política de reinicio: Si el contenedor falla o la PC se reinicia, Docker lo vuelve a levantar
     restart: always
-    
-    # Inyección de variables de entorno leídas desde el archivo .env local
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      
-    # Mapeo de puertos: [Puerto de tu máquina host] : [Puerto interno del contenedor]
     ports:
       - "${POSTGRES_PORT}:5432"
-      
-    # Montaje de volumenes para persistencia de datos y scripts de inicio
     volumes:
-      # 1. Volumen nombrado para mantener la BD guardada físicamente fuera del contenedor
+      # Volumen persistente para evitar pérdida de datos al apagar contenedores
       - postgres_data:/var/lib/postgresql/data
-      
-      # 2. Montaje del script SQL en la carpeta interna donde Postgres ejecuta scripts de inicialización
+      # Montaje de scripts SQL de inicialización automática
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      
-      # Se agrega el montaje de la carpeta migrations completa:
       - ./migrations:/docker-entrypoint-initdb.d/migrations:ro
-
-    # Verificación de salud (Health check) para confirmar que la BD está lista y aceptando conexiones
     healthcheck:
+      # Verificación de salud del motor de la BD
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s    # Ejecutar la prueba cada 10 segundos
-      timeout: 5s      # Tiempo máximo de espera de respuesta
-      retries: 5       # Intentos fallidos consecutivos antes de marcar 'unhealthy'
-      start_period: 10s # Tiempo inicial de gracia mientras inicia Postgres
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
+  # Servicio 2: Backend de API REST en Node.js + Express
   backend-express:
     build:
       context: ./backend-express
@@ -55,13 +41,34 @@ services:
       DB_HOST: database
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB}
-      JWT_SECRET: super_secret_jwt_key_roguelike_2026
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_roguelike_2026}
       JWT_EXPIRES_IN: 24h
     depends_on:
       database:
         condition: service_healthy
 
-# Declaración explícita de volúmenes persistentes gestionados por Docker
+  # Servicio 3: Backend de API REST en Python + FastAPI
+  backend-fastapi:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: roguelike_backend_fastapi
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_roguelike_2026}
+    depends_on:
+      database:
+        condition: service_healthy
+
+# Declaración de volumen con driver local para almacenamiento persistente
 volumes:
   postgres_data:
     driver: local

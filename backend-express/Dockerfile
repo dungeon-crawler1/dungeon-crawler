@@ -1,20 +1,20 @@
-# Imagen base oficial de Node.js en Alpine (ligera)
+# Imagen base liviana de Node.js basada en Alpine Linux
 FROM node:20-alpine
 
-# Establecer directorio de trabajo dentro del contenedor
+# Establecer directorio de trabajo en la imagen
 WORKDIR /app
 
-# Copiar archivos de definición de dependencias
+# Copiar manifiestos de dependencias
 COPY package*.json ./
 
-# Instalar dependencias del proyecto
+# Instalar dependencias en limpio
 RUN npm install
 
-# Copiar el resto del código fuente
+# Copiar el código fuente
 COPY . .
 
-# Exponer el puerto
+# Exponer el puerto configurado
 EXPOSE 3000
 
-# Comando por defecto para iniciar la aplicación
+# Comando de ejecución del servidor
 CMD ["npm", "start"]

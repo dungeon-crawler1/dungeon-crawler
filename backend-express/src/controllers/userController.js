@@ -1,39 +1,20 @@
-const db = require('../config/db');
+// Capa de Presentación (Controllers): Perfil del jugador
+const UserService = require('../services/userService');
+const { sendResponse } = require('../utils/formatters');
 
-/**
- * Obtener el perfil del usuario autenticado.
- * Endpoint protegido: GET /api/users/profile
- */
 const getProfile = async (req, res) => {
   try {
-    // req.user fue inyectado previamente por el middleware authenticateJWT
     const userId = req.user.id;
+    const result = await UserService.getUserProfile(userId);
 
-    // Buscar la información completa del usuario omitiendo la contraseña
-    const userQuery = 'SELECT id, username, email, fecha_registro FROM usuarios WHERE id = $1';
-    const userResult = await db.query(userQuery, [userId]);
-
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Usuario no encontrado.'
-      });
+    if (!result.success) {
+      return sendResponse(res, 404, 'error', result.message);
     }
 
-    return res.status(200).json({
-      status: 'success',
-      data: userResult.rows[0]
-    });
-
+    return sendResponse(res, 200, 'success', 'Perfil obtenido exitosamente.', { data: result.data });
   } catch (error) {
-    console.error('Error en controller getProfile:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Error interno del servidor al obtener el perfil.'
-    });
+    return sendResponse(res, 500, 'error', 'Error interno del servidor al obtener el perfil.');
   }
 };
 
-module.exports = {
-  getProfile
-};
+module.exports = { getProfile };
