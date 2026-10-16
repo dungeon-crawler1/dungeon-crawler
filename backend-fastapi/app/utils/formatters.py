@@ -1,7 +1,7 @@
 from fastapi.responses import JSONResponse
 
-def build_json_response(status_code: int, status: str, message: str, **kwargs):
-    """Construye respuestas JSON estandarizadas (cumple DRY)."""
+def build_json_response(status_code: int, status: str, message: str = "", **kwargs):
+    """Construye respuestas JSON estandarizadas sin romper si se omite el mensaje (cumple DRY)."""
     payload = {"status": status, "message": message}
     payload.update(kwargs)
     return JSONResponse(status_code=status_code, content=payload)

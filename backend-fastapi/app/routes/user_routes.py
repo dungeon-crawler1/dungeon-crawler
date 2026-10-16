@@ -17,4 +17,4 @@ def get_profile(request: Request, db=Depends(get_db_connection)):
     if not success:
         return build_json_response(404, "error", result)
 
-    return build_json_response(200, "success", data=result)
+    return build_json_response(200, "success", "Perfil obtenido exitosamente.", data=result)
