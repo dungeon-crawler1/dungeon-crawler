@@ -1,8 +1,8 @@
-# Especificación de orquestación para contenedores Docker
+version: '3.8'
+
 services:
-  # Servicio 1: Motor de Base de Datos Relacional PostgreSQL
   database:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     container_name: roguelike_postgres_db
     restart: always
     environment:
@@ -12,63 +12,49 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      # Volumen persistente para evitar pérdida de datos al apagar contenedores
+      - ./migrations:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
-      # Montaje de scripts SQL de inicialización automática
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - ./migrations:/docker-entrypoint-initdb.d/migrations:ro
     healthcheck:
-      # Verificación de salud del motor de la BD
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 10s
 
-  # Servicio 2: Backend de API REST en Node.js + Express
   backend-express:
-    build:
-      context: ./backend-express
-      dockerfile: Dockerfile
+    build: ./backend-express
     container_name: roguelike_backend_express
     restart: always
     ports:
       - "3000:3000"
     environment:
       PORT: 3000
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_HOST: database
       DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
-      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_roguelike_2026}
-      JWT_EXPIRES_IN: 24h
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       database:
         condition: service_healthy
 
-  # Servicio 3: Backend de API REST en Python + FastAPI
   backend-fastapi:
-    build:
-      context: ./backend-fastapi
-      dockerfile: Dockerfile
+    build: ./backend-fastapi
     container_name: roguelike_backend_fastapi
     restart: always
     ports:
       - "8000:8000"
     environment:
       PORT: 8000
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_HOST: database
       DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
-      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_roguelike_2026}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       database:
         condition: service_healthy
 
-# Declaración de volumen con driver local para almacenamiento persistente
 volumes:
   postgres_data:
-    driver: local
