@@ -23,20 +23,26 @@ class GameEngineService {
 
   static generateDoors(currentScore) {
     const nextRoom = currentScore + 1;
-    // Jefes aparecen tras 20 habitaciones superadas, cada 10 habitaciones
+
+    // Regla de Jefes: aparece tras 20 habitaciones superadas, cada 10 habitaciones
     if (nextRoom >= 20 && (nextRoom === 20 || (nextRoom - 20) % 10 === 0)) {
       return [{ type: 'COMBATE_JEFE', icon: '👑', label: 'Enfrentamiento contra Jefe Final' }];
     }
 
+    // Opciones base disponibles desde la habitación 1
     const pool = [
       { type: 'COMBATE_NORMAL', icon: '⚔️', label: 'Combate Normal' },
-      { type: 'COMBATE_ELITE', icon: '💀', label: 'Enemigo Élite' },
       { type: 'MERCADER', icon: '🛒', label: 'Mercader Ambulante' },
       { type: 'FUENTE_DESEOS', icon: '⛲', label: 'Fuente de los Deseos' },
       { type: 'ESTATUA_SAGRADA', icon: '🗿', label: 'Estatua Sagrada' },
       { type: 'SALA_AYUDA', icon: '⛺', label: 'Zona de Descanso' },
       { type: 'TESORO', icon: '💎', label: 'Cámara del Tesoro' }
     ];
+
+    // Restricción: Élite solo se habilita a partir de la 5ta habitación superada (currentScore >= 5)
+    if (currentScore >= 5) {
+      pool.push({ type: 'COMBATE_ELITE', icon: '💀', label: 'Enemigo Élite' });
+    }
 
     const doorCount = getRandomInt(2, 3);
     const selected = [];
