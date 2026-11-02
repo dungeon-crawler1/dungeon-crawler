@@ -3,18 +3,18 @@
 
 > Documento **generado automáticamente** por la cátedra de Programación III (RepoSense + análisis de calidad + constancia). **No editar a mano**: se regenera en cada evaluación.
 > Rama evaluada: `main`. Análisis **heurístico** (regex + métricas): es una criba para orientar la revisión, **no una nota**.
-> Generado: 2026-10-29.
+> Generado: 2026-11-02.
 
 ## 1. Veredicto
 
 | Aspecto | Resultado |
 |---|---|
 | Tipo de proyecto | backend |
-| Índice de calidad de servicios | **52/100** (mínimo 60) |
-| Criterios cumplidos | **12/15** |
+| Índice de calidad de servicios | **32/100** (mínimo 60) |
+| Criterios cumplidos | **11/15** |
 | Aprobado (semáforo) | **NO** |
-| Código (LOC) | 463 |
-| Archivos de código | 20 |
+| Código (LOC) | 737 |
+| Archivos de código | 25 |
 | Tests (archivos) | 0 |
 | Cobertura de líneas | no medible (mínimo 80%) |
 | Capas detectadas | presentacion, logica, datos |
@@ -25,7 +25,7 @@
 
 | Autor | Commits | Código (LOC) | Tests (LOC) | Docs (LOC) | Días activos | % del código |
 |---|---:|---:|---:|---:|---:|---:|
-| Mateo Gomez | 9 | 636 | 0 | 253 | 6 | 100% |
+| Mateo Gomez | 12 | 976 | 0 | 253 | 8 | 100% |
 
 > _El LOC de autoría lo calcula RepoSense sobre el historial y puede diferir del LOC de código del análisis de calidad (que mira solo el estado de `main`)._
 
@@ -47,7 +47,7 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Un resumen numérico (0-100) que combina todas las señales y métricas del análisis, con topes duros por duplicación.
 - **Por qué importa:** Ordena y prioriza la revisión: un índice bajo indica varias señales que conviene mirar juntas.
-- **Tu resultado:** índice **52/100** _(mínimo 60)_
+- **Tu resultado:** índice **32/100** _(mínimo 60)_
 - **Para investigar la causa:**
     - ¿En qué momento del proyecto se concentraron los problemas (arranque, integración de partes, cierre)?
     - ¿El índice bajó por muchas señales chicas o por una o dos graves?
@@ -101,29 +101,33 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 - **Por qué importa:** Son difíciles de leer, probar y reutilizar, y sus cambios tienen efectos inesperados.
 - **Tu resultado:** **0** componente(s) demasiado grande(s) _(máximo 1)_
 
-### 10. Baja cohesión (Coh) — OK
+### 10. Baja cohesión (Coh) — A REVISAR
 
 - **Qué mide:** Una clase o unidad cuyos métodos y campos no están relacionados entre sí.
 - **Por qué importa:** Una unidad que cambia por motivos distintos es frágil y cuesta entenderla.
-- **Tu resultado:** **0** unidad(es) con baja cohesión _(máximo 0)_
+- **Tu resultado:** **1** unidad(es) con baja cohesión _(máximo 0)_
+- **Para investigar la causa:**
+    - ¿La unidad agrupa cosas que en realidad pertenecen a lugares distintos?
+    - ¿Cambia por motivos diferentes según la tarea?
+    - ¿Se pensó su responsabilidad antes de escribirla, o se fue agregando?
 
 ### 11. Complejidad alta (Compl) — OK
 
 - **Qué mide:** Complejidad ciclomática: cantidad de caminos posibles dentro de una función (condicionales, bucles, casos).
 - **Por qué importa:** Muchos caminos = difícil de seguir y de probar; suelen esconderse casos sin cubrir.
-- **Tu resultado:** **1** bloque(s) de complejidad alta _(máximo 5 por 1000 LOC (tenés 463 LOC))_
+- **Tu resultado:** **3** bloque(s) de complejidad alta _(máximo 5 por 1000 LOC (tenés 737 LOC))_
 
 ### 12. Funciones/métodos largos o con muchos parámetros (Tam) — OK
 
 - **Qué mide:** Tamaño de las funciones/métodos y cantidad de parámetros.
 - **Por qué importa:** Una función que hace varias cosas cuesta leerla, nombrarla y reutilizarla.
-- **Tu resultado:** **0** función/método(s) largos o con muchos parámetros _(máximo 10 por 1000 LOC)_
+- **Tu resultado:** **3** función/método(s) largos o con muchos parámetros _(máximo 10 por 1000 LOC)_
 
 ### 13. Acoplamiento alto (Acop) — A REVISAR
 
 - **Qué mide:** Cuánto depende una unidad de las partes internas de otra.
 - **Por qué importa:** Piezas muy enlazadas hacen que un cambio se propague y que sea difícil reemplazar partes.
-- **Tu resultado:** **4** unidad(es) con acoplamiento alto _(máximo 2 por 1000 LOC)_
+- **Tu resultado:** **6** unidad(es) con acoplamiento alto _(máximo 2 por 1000 LOC)_
 - **Para investigar la causa:**
     - ¿Las piezas se conocen en detalle entre sí (acceden a campos o estructuras internas)?
     - ¿El acceso a datos ocurre desde lugares que no son los responsables?
@@ -143,26 +147,32 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Cantidad de endpoints (rutas HTTP) expuestos por el backend.
 - **Por qué importa:** El backend se mide por lo que expone: pocos endpoints sugiere poca funcionalidad de servicio.
-- **Tu resultado:** **12** endpoint(s) _(mínimo 10)_
+- **Tu resultado:** **16** endpoint(s) _(mínimo 10)_
 
 ## 5. Qué falta para aprobar
 
-Criterios que hoy están en rojo y qué habría que cambiar para alcanzar el nivel de aprobación (perfil `exigente`):
+Criterios que hoy están en rojo y, para cada uno, una explicación breve de **cómo corregirlo** hasta alcanzar el nivel de aprobación (perfil `exigente`):
 
-| Criterio | Resultado actual | Meta | Qué arreglar |
+| Criterio | Resultado actual | Meta | Cómo corregirlo |
 |---|---|---|---|
-| Índice de calidad de servicios (indice) | índice **52/100** | mínimo 60 | Subir el índice a ≥60 corrigiendo primero las señales de más peso: duplicación, secretos, SQL y capas. |
-| Acoplamiento alto (Acop) | **4** unidad(es) con acoplamiento alto | máximo 2 por 1000 LOC | Reducir dependencias directas entre unidades; ≤2 por 1000 LOC. |
-| Cobertura de tests (Cob) | **no medible** (sin tests, sin runner o sin artefacto de cobertura) | mínimo 80% de líneas | Publicar cobertura (o correr la suite con coverage) y cubrir ≥80% de líneas. |
+| Índice de calidad de servicios (indice) | índice **32/100** | mínimo 60 | El índice es un resumen: sube al corregir los criterios en rojo. Empezá por los de más peso (duplicación ≤15%, SEC y SQL en 0, capas ≥2) y volvé a medir; la meta es ≥60. |
+| Baja cohesión (Coh) | **1** unidad(es) con baja cohesión | máximo 0 | Separá la clase en unidades con una sola responsabilidad: si los métodos cambian por motivos distintos, son clases distintas. Meta: 0 clases con baja cohesión. |
+| Acoplamiento alto (Acop) | **6** unidad(es) con acoplamiento alto | máximo 2 por 1000 LOC | Hacé que cada unidad dependa de una interfaz o de un módulo de servicio, no de los detalles internos de otra; evitá acceder a campos ajenos. Meta: ≤2 por 1000 LOC. |
+| Cobertura de tests (Cob) | **no medible** (sin tests, sin runner o sin artefacto de cobertura) | mínimo 80% de líneas | Agregá o ampliá tests que ejecuten los módulos sin cubrir (camino principal y errores) y publicá el artefacto (`coverage/lcov.info`, `coverage-summary.json`, `coverage.xml` o `coverage.json`) o corré la suite con coverage. Meta: ≥80% de líneas. |
 
-> Empezá por las señales de seguridad (**SEC**, **SQL**) y por la **duplicación**: son las que más pesan en el índice y las más rápidas de verificar a ojo.
+> Empezá por las señales de seguridad (**SEC**, **SQL**) y por la **duplicación**: son las que más pesan en el índice y las más rápidas de verificar a ojo. Después de corregir, volvé a correr la medición: el semáforo se recalcula sobre `main`.
 
 ## 6. Anexo: dónde mirar
 
 Archivos donde el análisis encontró cada señal en rojo (sin número de línea, a propósito):
 
-**Acoplamiento alto (Acop)** — 4 archivo(s):
+**Baja cohesión (Coh)** — 1 archivo(s):
+- `backend-express/src/services/gameEngineService.js`
+
+**Acoplamiento alto (Acop)** — 6 archivo(s):
+- `backend-express/src/repositories/gameRepository.js`
 - `backend-express/src/repositories/userRepository.js`
+- `backend-express/src/services/gameEngineService.js`
 - `backend-fastapi/app/repositories/user_repository.py`
 - `backend-fastapi/app/services/auth_service.py`
 - `backend-fastapi/app/services/user_service.py`
