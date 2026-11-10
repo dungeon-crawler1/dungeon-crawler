@@ -1,48 +1,35 @@
-// Capa de Presentación (Controllers): Endpoints HTTP del juego
-const GameEngineService = require('../services/gameEngineService');
-const { sendResponse } = require('../utils/formatters');
+// Handlers del Motor de Juego
+const gameEngineService = require('../services/gameEngineService');
+const { successResponse, errorResponse } = require('../utils/formatters');
 
-const startRun = async (req, res) => {
+async function startRun(req, res) {
   try {
     const { clase } = req.body;
-    const result = await GameEngineService.startNewRun(req.user.id, clase);
-    if (!result.success) return sendResponse(res, 400, 'error', result.message);
-    return sendResponse(res, 201, 'success', 'Partida iniciada.', { run: result.data });
-  } catch (err) {
-    return sendResponse(res, 500, 'error', 'Error interno al iniciar la partida.');
+    const run = await gameEngineService.startRun(req.user.id, clase);
+    return res.status(201).json(successResponse(run, 'Partida iniciada'));
+  } catch (error) {
+    return res.status(400).json(errorResponse(error.message));
   }
-};
+}
 
-const selectDoor = async (req, res) => {
+async function playTurn(req, res) {
   try {
-    const { doorIndex } = req.body;
-    const result = await GameEngineService.selectDoor(req.user.id, doorIndex);
-    if (!result.success) return sendResponse(res, 400, 'error', result.message);
-    return sendResponse(res, 200, 'success', result.message, result);
-  } catch (err) {
-    return sendResponse(res, 500, 'error', 'Error interno al seleccionar la puerta.');
+    const { id } = req.params;
+    const { accion } = req.body;
+    const run = await gameEngineService.playTurn(parseInt(id, 10), req.user.id, accion);
+    return res.status(200).json(successResponse(run, 'Turno procesado'));
+  } catch (error) {
+    return res.status(400).json(errorResponse(error.message));
   }
-};
+}
 
-const turnAction = async (req, res) => {
+async function getLeaderboard(req, res) {
   try {
-    const { action } = req.body;
-    const result = await GameEngineService.takeCombatTurn(req.user.id, action);
-    if (!result.success) return sendResponse(res, 400, 'error', result.message);
-    return sendResponse(res, 200, 'success', result.message, result);
-  } catch (err) {
-    return sendResponse(res, 500, 'error', 'Error interno al procesar el turno.');
+    const leaderboard = await gameEngineService.getLeaderboard();
+    return res.status(200).json(successResponse(leaderboard));
+  } catch (error) {
+    return res.status(500).json(errorResponse(error.message));
   }
-};
+}
 
-const retireRun = async (req, res) => {
-  try {
-    const result = await GameEngineService.retireRun(req.user.id);
-    if (!result.success) return sendResponse(res, 400, 'error', result.message);
-    return sendResponse(res, 200, 'success', result.message, { summary: result.summary });
-  } catch (err) {
-    return sendResponse(res, 500, 'error', 'Error interno al retirarse de la partida.');
-  }
-};
-
-module.exports = { startRun, selectDoor, turnAction, retireRun };
+module.exports = { startRun, playTurn, getLeaderboard };

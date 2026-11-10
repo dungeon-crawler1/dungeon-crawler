@@ -1,38 +1,29 @@
-// Capa de Datos (Repositories): Sentencias SQL parametrizadas (cumple SQL = 0 y CAPAS)
+// Capa de Acceso a Datos de Usuarios (SQL=0: Consultas parametrizadas)
 const db = require('../config/db');
 
-class UserRepository {
-  // Buscar usuario por username o email
-  static async findByUsernameOrEmail(username, email) {
-    const text = 'SELECT id FROM usuarios WHERE username = $1 OR email = $2';
-    const result = await db.query(text, [username, email]);
-    return result.rows[0];
-  }
-
-  // Buscar usuario por email completo
-  static async findByEmail(email) {
-    const text = 'SELECT * FROM usuarios WHERE email = $1';
-    const result = await db.query(text, [email]);
-    return result.rows[0];
-  }
-
-  // Buscar usuario por ID
-  static async findById(id) {
-    const text = 'SELECT id, username, email, fecha_registro FROM usuarios WHERE id = $1';
-    const result = await db.query(text, [id]);
-    return result.rows[0];
-  }
-
-  // Crear un nuevo usuario
-  static async createUser(username, email, passwordHash) {
-    const text = `
-      INSERT INTO usuarios (username, email, password_hash)
-      VALUES ($1, $2, $3)
-      RETURNING id, username, email, fecha_registro
-    `;
-    const result = await db.query(text, [username, email, passwordHash]);
-    return result.rows[0];
-  }
+// Buscar usuario por correo electrónico ($1 previene SQL Injection)
+async function findUserByEmail(email) {
+  const query = 'SELECT id, email, password_hash, created_at FROM usuarios WHERE email = $1';
+  const result = await db.query(query, [email]);
+  return result.rows[0] || null;
 }
 
-module.exports = UserRepository;
+// Crear un nuevo usuario ($1, $2 en formato parametrizado)
+async function createUser(email, passwordHash) {
+  const query = 'INSERT INTO usuarios (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at';
+  const result = await db.query(query, [email, passwordHash]);
+  return result.rows[0];
+}
+
+// Buscar usuario por su identificador primario
+async function findUserById(id) {
+  const query = 'SELECT id, email, created_at FROM usuarios WHERE id = $1';
+  const result = await db.query(query, [id]);
+  return result.rows[0] || null;
+}
+
+module.exports = {
+  findUserByEmail,
+  createUser,
+  findUserById
+};

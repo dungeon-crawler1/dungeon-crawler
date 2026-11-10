@@ -1,40 +1,23 @@
+# Lógica de Autenticación en FastAPI
 import os
-import datetime
 import jwt
-import bcrypt
+from passlib.context import CryptContext
+from fastapi import HTTPException
+from app.repositories import user_repository
 
-class AuthService:
-    """Capa de Lógica de Negocio: Encriptado de clave y firma de JWT (cumple SEC = 0)."""
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+JWT_SECRET = os.getenv("JWT_SECRET", "supersecretkey123")
 
-    @staticmethod
-    def hash_password(password: str) -> str:
-        """Genera el hash seguro recortando la contraseña a 72 bytes máximos (límite de bcrypt)."""
-        # Se convierte a bytes y se trunca a los primeros 72 bytes para evitar el ValueError
-        password_bytes = password.encode('utf-8')[:72]
-        salt = bcrypt.gensalt(10)
-        return bcrypt.hashpw(password_bytes, salt).decode('utf-8')
+async def register_user(email: str, password: str):
+    existing = await user_repository.find_user_by_email(email)
+    if existing:
+        raise HTTPException(status_code=400, detail="El usuario ya existe")
+    hashed = pwd_context.hash(password)
+    return await user_repository.create_user(email, hashed)
 
-    @staticmethod
-    def verify_password(plain_password: str, hashed_password: str) -> bool:
-        """Verifica la contraseña ingresada contra el hash almacenado en la BD."""
-        password_bytes = plain_password.encode('utf-8')[:72]
-        hashed_bytes = hashed_password.encode('utf-8')
-        return bcrypt.checkpw(password_bytes, hashed_bytes)
-
-    @staticmethod
-    def generate_jwt_token(user_id: int, username: str, email: str) -> str:
-        """Genera un token JWT firmado compatible con el servicio de Express."""
-        payload = {
-            "id": user_id,
-            "username": username,
-            "email": email,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-        }
-        secret_key = os.environ.get("JWT_SECRET")
-        return jwt.encode(payload, secret_key, algorithm="HS256")
-
-    @staticmethod
-    def decode_jwt_token(token: str):
-        """Decodifica y valida un token JWT."""
-        secret_key = os.environ.get("JWT_SECRET")
-        return jwt.decode(token, secret_key, algorithms=["HS256"])
+async def login_user(email: str, password: str):
+    user = await user_repository.find_user_by_email(email)
+    if not user or not pwd_context.verify(password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+    token = jwt.encode({"id": user["id"], "email": user["email"]}, JWT_SECRET, algorithm="HS256")
+    return {"token": token, "user": {"id": user["id"], "email": user["email"]}}

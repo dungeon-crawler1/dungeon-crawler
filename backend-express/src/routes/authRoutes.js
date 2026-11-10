@@ -1,4 +1,4 @@
-// Rutas de autenticación
+// Definición de Rutas de Autenticación
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
