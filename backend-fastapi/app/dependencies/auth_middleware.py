@@ -1,25 +1,16 @@
+# Middleware de Autenticación mediante inyección de dependencias
+import os
 import jwt
-from fastapi import Request
-from app.services.auth_service import AuthService
-from app.utils.formatters import build_json_response
+from fastapi import Header, HTTPException
 
-def verify_jwt(request: Request):
-    """Middleware de verificación de tokens JWT para rutas protegidas."""
-    auth_header = request.headers.get("Authorization")
+JWT_SECRET = os.getenv("JWT_SECRET", "supersecretkey123")
 
-    if not auth_header or not auth_header.startswith("Bearer "):
-        return build_json_response(
-            401, "error", 
-            "Acceso denegado: No se proporcionó un token de autenticación (Bearer token requerido)."
-        )
-
-    token = auth_header.split(" ")[1]
+async def get_current_user(authorization: str = Header(...)):
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Formato de token inválido")
+    token = authorization.split(" ")[1]
     try:
-        payload = AuthService.decode_jwt_token(token)
-        request.state.user = payload
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         return payload
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-        return build_json_response(
-            401, "error", 
-            "Acceso denegado: El token proporcionado es inválido o ha expirado."
-        )
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")

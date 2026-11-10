@@ -1,16 +1,13 @@
-// Configuración y creación del pool de conexiones a PostgreSQL
+// Configuración del pool de conexiones PostgreSQL para Express
 const { Pool } = require('pg');
 
-// Creación de la instancia del pool leyendo estrictamente del entorno (cumple SEC = 0)
+// Lectura estricta mediante variables de entorno (SEC=0)
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST || 'database',
   port: parseInt(process.env.DB_PORT || '5432', 10),
+  user: process.env.DB_USER || 'roguelike_user',
+  password: process.env.DB_PASSWORD || 'roguelike_pass',
+  database: process.env.DB_NAME || 'roguelike_db'
 });
 
-// Función de consulta parametrizada
-module.exports = {
-  query: (text, params) => pool.query(text, params),
-};
+module.exports = pool;

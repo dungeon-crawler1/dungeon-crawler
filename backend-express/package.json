@@ -1,11 +1,10 @@
 {
-  "name": "roguelike-backend-express",
+  "name": "backend-express",
   "version": "1.0.0",
-  "description": "API REST Backend en Node.js y Express",
+  "description": "Backend Roguelike Express",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "start": "node src/index.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

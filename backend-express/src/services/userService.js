@@ -1,15 +1,12 @@
-// Capa de Lógica de Negocio (Services): Gestión de usuarios
-const UserRepository = require('../repositories/userRepository');
-const { formatUser } = require('../utils/formatters');
+// Servicio de información de usuario
+const userRepository = require('../repositories/userRepository');
 
-class UserService {
-  static async getUserProfile(userId) {
-    const user = await UserRepository.findById(userId);
-    if (!user) {
-      return { success: false, message: 'Usuario no encontrado.' };
-    }
-    return { success: true, data: formatUser(user) };
+async function getProfile(userId) {
+  const user = await userRepository.findUserById(userId);
+  if (!user) {
+    throw new Error('Usuario no encontrado');
   }
+  return user;
 }
 
-module.exports = UserService;
+module.exports = { getProfile };

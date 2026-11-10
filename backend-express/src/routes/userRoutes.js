@@ -1,9 +1,9 @@
-// Rutas de usuarios
+// Definición de Rutas de Usuario protegidas
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const authenticateJWT = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-router.get('/profile', authenticateJWT, userController.getProfile);
+router.get('/profile', authMiddleware, userController.getProfile);
 
 module.exports = router;

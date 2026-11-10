@@ -1,34 +1,20 @@
-// Middleware de verificación de firma de JWT
+// Middleware para la protección de rutas mediante JWT
 const jwt = require('jsonwebtoken');
-const { sendResponse } = require('../utils/formatters');
 
-const authenticateJWT = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return sendResponse(
-      res, 
-      401, 
-      'error', 
-      'Acceso denegado: No se proporcionó un token de autenticación (Bearer token requerido).'
-    );
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ status: 'error', message: 'Token no provisto' });
   }
 
-  const token = authHeader.split(' ')[1];
-  const secretKey = process.env.JWT_SECRET;
-
-  jwt.verify(token, secretKey, (err, userPayload) => {
+  jwt.verify(token, process.env.JWT_SECRET || 'supersecretkey123', (err, user) => {
     if (err) {
-      return sendResponse(
-        res, 
-        401, 
-        'error', 
-        'Acceso denegado: El token proporcionado es inválido o ha expirado.'
-      );
+      return res.status(403).json({ status: 'error', message: 'Token inválido' });
     }
-    req.user = userPayload;
+    req.user = user;
     next();
   });
-};
+}
 
-module.exports = authenticateJWT;
+module.exports = authenticateToken;

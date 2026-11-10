@@ -1,13 +1,11 @@
-// Rutas de la API del juego
+// Definición de Rutas del Juego
 const express = require('express');
 const router = express.Router();
 const gameController = require('../controllers/gameController');
-const authenticateJWT = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-router.post('/start', authenticateJWT, gameController.startRun);
-router.post('/door', authenticateJWT, gameController.selectDoor);
-router.post('/turn', authenticateJWT, gameController.turnAction);
-router.post('/retire', authenticateJWT, gameController.retireRun);
+router.post('/start', authMiddleware, gameController.startRun);
+router.post('/run/:id/turn', authMiddleware, gameController.playTurn);
+router.get('/leaderboard', gameController.getLeaderboard);
 
-// Exportación directa requerida por Express (NO usar { router })
 module.exports = router;

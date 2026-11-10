@@ -1,43 +1,31 @@
-// Capa de Lógica de Negocio (Services): Hashing bcrypt y Tokens JWT
+// Capa de Lógica de Negocio de Autenticación
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const UserRepository = require('../repositories/userRepository');
-const { formatUser } = require('../utils/formatters');
+const userRepository = require('../repositories/userRepository');
 
-class AuthService {
-  // Servicio de registro
-  static async registerUser(username, email, password) {
-    const existingUser = await UserRepository.findByUsernameOrEmail(username, email);
-    if (existingUser) {
-      return { success: false, message: 'El nombre de usuario o el correo electrónico ya se encuentran registrados.' };
-    }
-
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-    const newUser = await UserRepository.createUser(username, email, passwordHash);
-
-    return { success: true, data: formatUser(newUser) };
+// Registro de usuario con hash seguro bcrypt
+async function register(email, password) {
+  const existingUser = await userRepository.findUserByEmail(email);
+  if (existingUser) {
+    throw new Error('El usuario ya existe');
   }
-
-  // Servicio de login
-  static async loginUser(email, password) {
-    const user = await UserRepository.findByEmail(email);
-    if (!user) {
-      return { success: false, message: 'Credenciales inválidas (correo o contraseña incorrectos).' };
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    if (!isValidPassword) {
-      return { success: false, message: 'Credenciales inválidas (correo o contraseña incorrectos).' };
-    }
-
-    const secretKey = process.env.JWT_SECRET;
-    const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
-    const payload = { id: user.id, username: user.username, email: user.email };
-    const token = jwt.sign(payload, secretKey, { expiresIn });
-
-    return { success: true, token, user: formatUser(user) };
-  }
+  const passwordHash = await bcrypt.hash(password, 10);
+  return await userRepository.createUser(email, passwordHash);
 }
 
-module.exports = AuthService;
+// Inicio de sesión y generación de token JWT
+async function login(email, password) {
+  const user = await userRepository.findUserByEmail(email);
+  if (!user) {
+    throw new Error('Credenciales inválidas');
+  }
+  const validPassword = await bcrypt.compare(password, user.password_hash);
+  if (!validPassword) {
+    throw new Error('Credenciales inválidas');
+  }
+  const secret = process.env.JWT_SECRET || 'supersecretkey123';
+  const token = jwt.sign({ id: user.id, email: user.email }, secret, { expiresIn: '24h' });
+  return { token, user: { id: user.id, email: user.email } };
+}
+
+module.exports = { register, login };

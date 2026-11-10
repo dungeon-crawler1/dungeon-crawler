@@ -1,30 +1,23 @@
-class UserRepository:
-    """Capa de Datos: Consultas SQL parametrizadas (cumple SQL = 0)."""
+# Acceso a datos de Usuarios en Python (SQL=0: Uso exclusivo de $1, $2)
+from app.config.db import get_db_pool
 
-    @staticmethod
-    def find_by_username_or_email(cursor, username: str, email: str):
-        query = "SELECT id FROM usuarios WHERE username = %s OR email = %s"
-        cursor.execute(query, (username, email))
-        return cursor.fetchone()
+async def find_user_by_email(email: str):
+    pool = await get_db_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow('SELECT id, email, password_hash, created_at FROM usuarios WHERE email = $1', email)
+        return dict(row) if row else None
 
-    @staticmethod
-    def find_by_email(cursor, email: str):
-        query = "SELECT id, username, email, password_hash, fecha_registro FROM usuarios WHERE email = %s"
-        cursor.execute(query, (email,))
-        return cursor.fetchone()
+async def create_user(email: str, password_hash: str):
+    pool = await get_db_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            'INSERT INTO usuarios (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at',
+            email, password_hash
+        )
+        return dict(row)
 
-    @staticmethod
-    def find_by_id(cursor, user_id: int):
-        query = "SELECT id, username, email, fecha_registro FROM usuarios WHERE id = %s"
-        cursor.execute(query, (user_id,))
-        return cursor.fetchone()
-
-    @staticmethod
-    def create_user(cursor, username: str, email: str, password_hash: str):
-        query = """
-            INSERT INTO usuarios (username, email, password_hash)
-            VALUES (%s, %s, %s)
-            RETURNING id, username, email, fecha_registro
-        """
-        cursor.execute(query, (username, email, password_hash))
-        return cursor.fetchone()
+async def find_user_by_id(user_id: int):
+    pool = await get_db_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow('SELECT id, email, created_at FROM usuarios WHERE id = $1', user_id)
+        return dict(row) if row else None

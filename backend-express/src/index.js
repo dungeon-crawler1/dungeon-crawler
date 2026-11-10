@@ -1,5 +1,4 @@
-// Punto de entrada de la API Express
-require('dotenv').config();
+// Punto de entrada del Servidor Express
 const express = require('express');
 const cors = require('cors');
 
@@ -8,22 +7,17 @@ const userRoutes = require('./routes/userRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-// Registro de enrutadores
+// Registro de endpoints con sufijos correspondientes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/game', gameRoutes);
 
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', service: 'Express Backend API' });
+// Manejador genérico DBG=0
+app.listen(port, () => {
+  // Servidor en ejecución sin logs ruidosos en producción
 });
-
-app.use((req, res) => {
-  res.status(404).json({ status: 'error', message: 'Ruta no encontrada' });
-});
-
-app.listen(PORT, () => {});
