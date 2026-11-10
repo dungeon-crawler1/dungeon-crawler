@@ -3,29 +3,32 @@
 
 > Documento **generado automáticamente** por la cátedra de Programación III (RepoSense + análisis de calidad + constancia). **No editar a mano**: se regenera en cada evaluación.
 > Rama evaluada: `main`. Análisis **heurístico** (regex + métricas): es una criba para orientar la revisión, **no una nota**.
-> Generado: 2026-10-29.
+> Generado: 2026-11-06.
 
 ## 1. Veredicto
 
 | Aspecto | Resultado |
 |---|---|
 | Tipo de proyecto | backend |
-| Índice de calidad de servicios | **52/100** (mínimo 60) |
-| Criterios cumplidos | **12/15** |
+| Índice de calidad de servicios | **48/100** (mínimo 50) |
+| Criterios cumplidos | **11/15** |
 | Aprobado (semáforo) | **NO** |
-| Código (LOC) | 463 |
-| Archivos de código | 20 |
+| Código (LOC) | 737 |
+| Archivos de código | 25 |
 | Tests (archivos) | 0 |
 | Cobertura de líneas | no medible (mínimo 80%) |
 | Capas detectadas | presentacion, logica, datos |
+| Pushes directos a `main` (sin PR) | 1 |
 
-> **Aprobado** exige cumplir **todos** los criterios del semáforo. No es una nota: sirve para ordenar y priorizar la revisión.
+> **Pushes directos:** se detectaron **1** commit(s) a `main` que no pasaron por un Pull Request. El flujo esperado es **rama → PR → revisión → merge**; el PR se aprueba con el mensaje `Aprobado`. Evitá pushear directo a `main`: la ruleset lo bloquea y el commit directo queda auditado.
+
+> **Aprobado** exige las compuertas críticas (**SEC**, **SQL**, **capas**, **índice ≥ 50** y **cobertura ≥ 80 %** cuando aplica) y tolera hasta **3 criterios en rojo** (12/15). No es una nota: sirve para ordenar y priorizar la revisión.
 
 ## 2. Autoría (RepoSense)
 
 | Autor | Commits | Código (LOC) | Tests (LOC) | Docs (LOC) | Días activos | % del código |
 |---|---:|---:|---:|---:|---:|---:|
-| Mateo Gomez | 9 | 636 | 0 | 253 | 6 | 100% |
+| Mateo Gomez | 12 | 976 | 0 | 253 | 8 | 100% |
 
 > _El LOC de autoría lo calcula RepoSense sobre el historial y puede diferir del LOC de código del análisis de calidad (que mira solo el estado de `main`)._
 
@@ -35,7 +38,7 @@
 
 | Alumno | Sesiones | Cumplimiento | Pausa | Recencia | IC | Nivel | Para subir de nivel |
 |---|--:|--:|--:|--:|--:|--|--|
-| Mateo Gomez | 7 | 32% | 21 d | 93% | **34** | No aprueba | Cumplimiento 32% (mín. 50%); Pausa 21 d (máx. 10 d) |
+| Mateo Gomez | 8 | 35% | 21 d | 57% | **31** | No aprueba | Cumplimiento 35% (mín. 50%) |
 
 > Para aprobar el IC: **2 sesiones por semana** sostenidas, sin pausas mayores a **10 días** y con actividad en las **últimas 2 semanas**. Se excluyen merges, bots y al docente. Zona horaria UTC-3.
 
@@ -47,7 +50,7 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Un resumen numérico (0-100) que combina todas las señales y métricas del análisis, con topes duros por duplicación.
 - **Por qué importa:** Ordena y prioriza la revisión: un índice bajo indica varias señales que conviene mirar juntas.
-- **Tu resultado:** índice **52/100** _(mínimo 60)_
+- **Tu resultado:** índice **48/100** _(mínimo 50)_
 - **Para investigar la causa:**
     - ¿En qué momento del proyecto se concentraron los problemas (arranque, integración de partes, cierre)?
     - ¿El índice bajó por muchas señales chicas o por una o dos graves?
@@ -101,29 +104,33 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 - **Por qué importa:** Son difíciles de leer, probar y reutilizar, y sus cambios tienen efectos inesperados.
 - **Tu resultado:** **0** componente(s) demasiado grande(s) _(máximo 1)_
 
-### 10. Baja cohesión (Coh) — OK
+### 10. Baja cohesión (Coh) — A REVISAR
 
 - **Qué mide:** Una clase o unidad cuyos métodos y campos no están relacionados entre sí.
 - **Por qué importa:** Una unidad que cambia por motivos distintos es frágil y cuesta entenderla.
-- **Tu resultado:** **0** unidad(es) con baja cohesión _(máximo 0)_
+- **Tu resultado:** **1** unidad(es) con baja cohesión _(máximo 0)_
+- **Para investigar la causa:**
+    - ¿La unidad agrupa cosas que en realidad pertenecen a lugares distintos?
+    - ¿Cambia por motivos diferentes según la tarea?
+    - ¿Se pensó su responsabilidad antes de escribirla, o se fue agregando?
 
 ### 11. Complejidad alta (Compl) — OK
 
 - **Qué mide:** Complejidad ciclomática: cantidad de caminos posibles dentro de una función (condicionales, bucles, casos).
 - **Por qué importa:** Muchos caminos = difícil de seguir y de probar; suelen esconderse casos sin cubrir.
-- **Tu resultado:** **1** bloque(s) de complejidad alta _(máximo 5 por 1000 LOC (tenés 463 LOC))_
+- **Tu resultado:** **3** bloque(s) de complejidad alta _(máximo 5 por 1000 LOC (tenés 737 LOC))_
 
 ### 12. Funciones/métodos largos o con muchos parámetros (Tam) — OK
 
 - **Qué mide:** Tamaño de las funciones/métodos y cantidad de parámetros.
 - **Por qué importa:** Una función que hace varias cosas cuesta leerla, nombrarla y reutilizarla.
-- **Tu resultado:** **0** función/método(s) largos o con muchos parámetros _(máximo 10 por 1000 LOC)_
+- **Tu resultado:** **3** función/método(s) largos o con muchos parámetros _(máximo 10 por 1000 LOC)_
 
 ### 13. Acoplamiento alto (Acop) — A REVISAR
 
 - **Qué mide:** Cuánto depende una unidad de las partes internas de otra.
 - **Por qué importa:** Piezas muy enlazadas hacen que un cambio se propague y que sea difícil reemplazar partes.
-- **Tu resultado:** **4** unidad(es) con acoplamiento alto _(máximo 2 por 1000 LOC)_
+- **Tu resultado:** **6** unidad(es) con acoplamiento alto _(máximo 2 por 1000 LOC)_
 - **Para investigar la causa:**
     - ¿Las piezas se conocen en detalle entre sí (acceden a campos o estructuras internas)?
     - ¿El acceso a datos ocurre desde lugares que no son los responsables?
@@ -133,7 +140,8 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Porcentaje de líneas de código ejecutadas por la suite de tests (cobertura real, no cantidad de archivos de test).
 - **Por qué importa:** Un test que existe pero no ejecuta el código no protege de nada: la cobertura muestra qué partes quedan sin verificar.
-- **Tu resultado:** **no medible** (sin tests, sin runner o sin artefacto de cobertura) _(mínimo 80% de líneas)_
+- **Tu resultado:** **no medible** — sin tests en Python _(mínimo 80% de líneas)_
+- **Causa detectada:** sin tests en Python
 - **Para investigar la causa:**
     - ¿Qué módulos o ramas del sistema nunca se ejecutan en los tests?
     - ¿Los tests prueban el camino principal y los errores, o solo el caso feliz?
@@ -143,26 +151,68 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Cantidad de endpoints (rutas HTTP) expuestos por el backend.
 - **Por qué importa:** El backend se mide por lo que expone: pocos endpoints sugiere poca funcionalidad de servicio.
-- **Tu resultado:** **12** endpoint(s) _(mínimo 10)_
+- **Tu resultado:** **16** endpoint(s) _(mínimo 5)_
 
-## 5. Qué falta para aprobar
+## 5. Observaciones y qué falta
 
-Criterios que hoy están en rojo y qué habría que cambiar para alcanzar el nivel de aprobación (perfil `exigente`):
+Criterios que hoy están en rojo y, para cada uno, una explicación breve de **cómo corregirlo** hasta alcanzar el nivel de aprobación (perfil `exigente`):
 
-| Criterio | Resultado actual | Meta | Qué arreglar |
-|---|---|---|---|
-| Índice de calidad de servicios (indice) | índice **52/100** | mínimo 60 | Subir el índice a ≥60 corrigiendo primero las señales de más peso: duplicación, secretos, SQL y capas. |
-| Acoplamiento alto (Acop) | **4** unidad(es) con acoplamiento alto | máximo 2 por 1000 LOC | Reducir dependencias directas entre unidades; ≤2 por 1000 LOC. |
-| Cobertura de tests (Cob) | **no medible** (sin tests, sin runner o sin artefacto de cobertura) | mínimo 80% de líneas | Publicar cobertura (o correr la suite con coverage) y cubrir ≥80% de líneas. |
+| Criterio | Resultado actual | Meta | Brecha | Cómo alcanzarlo |
+|---|---|---|---|---|
+| Índice de calidad de servicios (indice) | índice **48/100** | mínimo 50 | faltan 2 pts | El índice sólo penaliza lo que **excede** los umbrales de cada criterio: si tenés todo en verde, el índice es 100. Si está en rojo, mirá la columna **Brecha** y los criterios en rojo; corregí primero duplicación, SEC, SQL y capas. Meta del perfil exigente: ≥50. |
+| Baja cohesión (Coh) | **1** unidad(es) con baja cohesión | máximo 0 | 1 clase(s) a separar | Separá la clase en unidades con una sola responsabilidad: si los métodos cambian por motivos distintos, son clases distintas. Meta: 0 clases con baja cohesión. |
+| Acoplamiento alto (Acop) | **6** unidad(es) con acoplamiento alto | máximo 2 por 1000 LOC | 6 hallazgo(s); el máximo para 737 LOC es 1.5 | Hacé que cada unidad dependa de una interfaz o de un módulo de servicio, no de los detalles internos de otra; evitá acceder a campos ajenos. Meta: ≤2 por 1000 LOC. |
+| Cobertura de tests (Cob) | **no medible** — sin tests en Python | mínimo 80% de líneas | no medible: generá el artefacto o corré la suite | Agregá una suite de tests (`tests/` o `test_*.py`) **y** un `requirements.txt`/`pyproject.toml`, y corré la suite con coverage. Meta: ≥80% de líneas. |
 
-> Empezá por las señales de seguridad (**SEC**, **SQL**) y por la **duplicación**: son las que más pesan en el índice y las más rápidas de verificar a ojo.
+> Empezá por las señales de seguridad (**SEC**, **SQL**) y por la **duplicación**: son las que más pesan en el índice y las más rápidas de verificar a ojo. Después de corregir, volvé a correr la medición: el semáforo se recalcula sobre `main`.
 
-## 6. Anexo: dónde mirar
+> **Tests (informativo):** hoy tenés **0** archivo(s) de test; la meta es **5**, pero **no** es una compuerta del semáforo. Para acercarte, agregá tests de los flujos principales (servicios y endpoints) y corré la suite con coverage.
+
+## 6. Actividad en clase (miércoles y viernes)
+
+> Se consideran las **23 clases** del período (miércoles y viernes; Nov 4 y 6 quedan afuera porque el calendario las marca sin clase). `Commits` = commits de trabajo (no-merge); `Merges` = merges de PR (también son push). Los días sin actividad dicen **sin actividad**.
+
+### Mateo Gomez
+
+**9/23 clases con actividad** · 14 commits · 6 merges
+
+| Fecha | Marca | Repositorios | Commits / merges |
+|---|:--:|---|--:|
+| 2026-08-14 | No | sin actividad | 0 / 0 |
+| 2026-08-19 | No | sin actividad | 0 / 0 |
+| 2026-08-21 | No | sin actividad | 0 / 0 |
+| 2026-08-26 | No | sin actividad | 0 / 0 |
+| 2026-08-28 | No | sin actividad | 0 / 0 |
+| 2026-09-02 | **Sí** | dungeon-crawler | 2 / 0 |
+| 2026-09-04 | **Sí** | dungeon-crawler | 1 / 1 |
+| 2026-09-09 | **Sí** | dungeon-crawler | 2 / 1 |
+| 2026-09-11 | No | sin actividad | 0 / 0 |
+| 2026-09-16 | No | sin actividad | 0 / 0 |
+| 2026-09-18 | No | sin actividad | 0 / 0 |
+| 2026-09-23 | No | sin actividad | 0 / 0 |
+| 2026-09-25 | **Sí** | dungeon-crawler | 1 / 1 |
+| 2026-09-30 | **Sí** | dungeon-crawler | 1 / 1 |
+| 2026-10-02 | No | sin actividad | 0 / 0 |
+| 2026-10-07 | No | sin actividad | 0 / 0 |
+| 2026-10-09 | No | sin actividad | 0 / 0 |
+| 2026-10-14 | **Sí** | dungeon-crawler | 2 / 0 |
+| 2026-10-16 | **Sí** | dungeon-crawler | 2 / 1 |
+| 2026-10-21 | No | sin actividad | 0 / 0 |
+| 2026-10-23 | No | sin actividad | 0 / 0 |
+| 2026-10-28 | **Sí** | dungeon-crawler | 1 / 0 |
+| 2026-10-30 | **Sí** | dungeon-crawler | 2 / 1 |
+
+## 7. Anexo: dónde mirar
 
 Archivos donde el análisis encontró cada señal en rojo (sin número de línea, a propósito):
 
-**Acoplamiento alto (Acop)** — 4 archivo(s):
+**Baja cohesión (Coh)** — 1 archivo(s):
+- `backend-express/src/services/gameEngineService.js`
+
+**Acoplamiento alto (Acop)** — 6 archivo(s):
+- `backend-express/src/repositories/gameRepository.js`
 - `backend-express/src/repositories/userRepository.js`
+- `backend-express/src/services/gameEngineService.js`
 - `backend-fastapi/app/repositories/user_repository.py`
 - `backend-fastapi/app/services/auth_service.py`
 - `backend-fastapi/app/services/user_service.py`
