@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-  # Servicio de Base de Datos PostgreSQL
   database:
     image: postgres:16-alpine
     container_name: roguelike_postgres_db
@@ -18,14 +15,12 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      # Verificación de disponibilidad de la base de datos
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 30s # Período de gracia para permitir que initdb y init.sql completen el primer arranque
+      start_period: 30s
 
-  # Backend Express (Node.js)
   backend-express:
     build: ./backend-express
     container_name: roguelike_backend_express
@@ -42,11 +37,13 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
       JWT_SECRET: ${JWT_SECRET}
+    volumes:
+      - ./backend-express:/app
+      - /app/node_modules
     depends_on:
       database:
         condition: service_healthy
 
-  # Backend FastAPI (Python)
   backend-fastapi:
     build: ./backend-fastapi
     container_name: roguelike_backend_fastapi
@@ -63,6 +60,8 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
       JWT_SECRET: ${JWT_SECRET}
+    volumes:
+      - ./backend-fastapi:/app
     depends_on:
       database:
         condition: service_healthy
