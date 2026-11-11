@@ -1,4 +1,6 @@
-// Handlers del Motor de Juego
+// =============================================================================
+// CONTROLADOR DE ENDPOINTS DEL JUEGO Y LEADERBOARD
+// =============================================================================
 const gameEngineService = require('../services/gameEngineService');
 const { successResponse, errorResponse } = require('../utils/formatters');
 
@@ -32,4 +34,29 @@ async function getLeaderboard(req, res) {
   }
 }
 
-module.exports = { startRun, playTurn, getLeaderboard };
+async function getUserLeaderboard(req, res) {
+  try {
+    const userLeaderboard = await gameEngineService.getUserLeaderboard(req.user.id);
+    return res.status(200).json(successResponse(userLeaderboard));
+  } catch (error) {
+    return res.status(500).json(errorResponse(error.message));
+  }
+}
+
+async function getRunTimeline(req, res) {
+  try {
+    const { id } = req.params;
+    const timeline = await gameEngineService.getRunTimeline(parseInt(id, 10), req.user.id);
+    return res.status(200).json(successResponse(timeline));
+  } catch (error) {
+    return res.status(404).json(errorResponse(error.message));
+  }
+}
+
+module.exports = { 
+  startRun, 
+  playTurn, 
+  getLeaderboard, 
+  getUserLeaderboard, 
+  getRunTimeline 
+};

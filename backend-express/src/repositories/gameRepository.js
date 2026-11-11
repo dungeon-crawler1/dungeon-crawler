@@ -1,7 +1,9 @@
-// Capa de Acceso a Datos de Partidas (SQL=0: Uso exclusivo de placeholders $1, $2...)
+// =============================================================================
+// REPOSITORIO DE PARTIDAS EN EXPRESS (SQL=0: Consultas parametrizadas)
+// =============================================================================
 const db = require('../config/db');
 
-// Guardar una nueva partida al iniciar el juego
+// Insertar una nueva partida al iniciar la run ($1 a $7 parametrizados)
 async function createRun(usuarioId, clase, vidaActual, vidaMaxima, ataque, defensa, estadoRun) {
   const query = `
     INSERT INTO partidas 
@@ -12,7 +14,7 @@ async function createRun(usuarioId, clase, vidaActual, vidaMaxima, ataque, defen
   return result.rows[0];
 }
 
-// Actualizar el estado dinámico de una partida existente
+// Actualizar el estado de una partida tras ejecutar un turno ($1 a $6 parametrizados)
 async function updateRun(id, vidaActual, monedas, puntuacion, resultado, estadoRun) {
   const query = `
     UPDATE partidas 
@@ -23,7 +25,7 @@ async function updateRun(id, vidaActual, monedas, puntuacion, resultado, estadoR
   return result.rows[0];
 }
 
-// Obtener las 10 mejores puntuaciones globales (Leaderboard Top 10)
+// Obtener el Top 10 Global de puntuaciones ordenado descendentemente
 async function getTop10Global() {
   const query = `
     SELECT p.id, u.email as usuario, p.clase, p.puntuacion, p.resultado, p.created_at 
@@ -35,8 +37,33 @@ async function getTop10Global() {
   return result.rows;
 }
 
+// Obtener el Top 10 de partidas del usuario autenticado ($1 parametrizado)
+async function getTop10User(userId) {
+  const query = `
+    SELECT id, clase, puntuacion, resultado, monedas_actuales, created_at 
+    FROM partidas 
+    WHERE usuario_id = $1 
+    ORDER BY puntuacion DESC 
+    LIMIT 10`;
+  const result = await db.query(query, [userId]);
+  return result.rows;
+}
+
+// Obtener la línea de tiempo/historial de una partida ($1 y $2 parametrizados)
+async function getRunTimeline(runId, userId) {
+  const query = `
+    SELECT id, usuario_id, clase, vida_actual, vida_maxima, ataque, defensa, 
+           monedas_actuales, puntuacion, resultado, estado_run, created_at 
+    FROM partidas 
+    WHERE id = $1 AND usuario_id = $2`;
+  const result = await db.query(query, [runId, userId]);
+  return result.rows[0] || null;
+}
+
 module.exports = {
   createRun,
   updateRun,
-  getTop10Global
+  getTop10Global,
+  getTop10User,
+  getRunTimeline
 };
