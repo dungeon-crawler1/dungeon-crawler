@@ -1,96 +1,57 @@
-import React, { useState } from 'react';
-import { GameState } from '../types/game';
-import { selectHeroClass, chooseDoor, executeCombatAction, buyShopItem, resolveEventOption } from '../services/gameService';
+// =============================================================================
+// VISTA PRINCIPAL DE GAMEPLAY (< 150 LÍNEAS)
+// =============================================================================
+import React from 'react';
+import { useGameEngine } from '../hooks/useGameEngine';
 import { ClassSelector } from '../components/game/ClassSelector';
 import { HealthManaBar } from '../components/game/HealthManaBar';
 import { CombatUI } from '../components/game/CombatUI';
 import { DoorSelector } from '../components/game/DoorSelector';
 import { MerchantModal } from '../components/game/MerchantModal';
 import { EventModal } from '../components/game/EventModal';
+import { GameSummary } from '../components/game/GameSummary';
+import { GameLog } from '../components/game/GameLog';
 
 export const GamePage: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>({
-    hero: null,
-    currentRoom: 1,
-    inCombat: false,
-    enemy: null,
-    availableDoors: [],
-    merchantItems: [],
-    currentEvent: null,
-    logs: ['Bienvenido a la Mazmorra.'],
-  });
-  const [loading, setLoading] = useState<boolean>(false);
+  const {
+    state, loading, error, selectClass, chooseDoor, attackEnemy,
+    usePotion, castSpell, buyItem, closeMerchant, resolveEvent, forfeitRun, resetRun,
+  } = useGameEngine();
 
-  const handleSelectClass = async (classId: string) => {
-    setLoading(true);
-    try {
-      const res = await selectHeroClass(classId);
-      setGameState(res);
-    } catch {
-      // Manejo estricto sin depuración residual
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!state.hero) {
+    return (
+      <div style={{ maxWidth: '900px', margin: '30px auto', padding: '20px' }}>
+        {error && <div style={{ padding: '12px', marginBottom: '15px', background: '#5c1a1a', color: '#ffd6d6', borderRadius: '6px' }}>⚠️ {error}</div>}
+        <ClassSelector onSelect={selectClass} disabled={loading} />
+      </div>
+    );
+  }
 
-  const handleDoor = async (doorId: string) => {
-    setLoading(true);
-    try {
-      const res = await chooseDoor(doorId);
-      setGameState(res);
-    } catch {} finally { setLoading(false); }
-  };
-
-  const handleCombat = async (action: 'ATTACK' | 'DEFEND' | 'SPELL' | 'FLEE') => {
-    setLoading(true);
-    try {
-      const res = await executeCombatAction(action);
-      setGameState(res);
-    } catch {} finally { setLoading(false); }
-  };
-
-  const handleBuy = async (itemId: string) => {
-    try {
-      const res = await buyShopItem(itemId);
-      setGameState(res);
-    } catch {}
-  };
-
-  const handleEvent = async (option: string) => {
-    try {
-      const res = await resolveEventOption(option);
-      setGameState(res);
-    } catch {}
-  };
-
-  if (!gameState.hero) {
-    return <ClassSelector onSelect={handleSelectClass} disabled={loading} />;
+  if (state.isFinished) {
+    return <GameSummary reason={state.finishReason} score={state.score} gold={state.hero.gold} onRestart={resetRun} />;
   }
 
   return (
     <div style={{ maxWidth: '900px', margin: '30px auto', padding: '20px' }}>
-      <HealthManaBar hero={gameState.hero} />
+      <HealthManaBar hero={state.hero} room={state.currentRoom} score={state.score} onForfeit={forfeitRun} disabled={loading} />
 
-      {gameState.inCombat && gameState.enemy && (
-        <CombatUI enemy={gameState.enemy} onAction={handleCombat} disabled={loading} />
+      {state.inCombat && state.enemy && (
+        <CombatUI hero={state.hero} enemy={state.enemy} onAttack={attackEnemy} onUsePotion={usePotion} onCastSpell={castSpell} disabled={loading} />
       )}
 
-      {!gameState.inCombat && gameState.merchantItems.length > 0 && (
-        <MerchantModal
-          items={gameState.merchantItems}
-          playerGold={gameState.hero.gold}
-          onBuy={handleBuy}
-          onClose={() => setGameState({ ...gameState, merchantItems: [] })}
-        />
+      {!state.inCombat && state.merchantItems.length > 0 && (
+        <MerchantModal items={state.merchantItems} playerGold={state.hero.gold} onBuy={buyItem} onClose={closeMerchant} disabled={loading} />
       )}
 
-      {!gameState.inCombat && gameState.currentEvent && (
-        <EventModal event={gameState.currentEvent} onResolve={handleEvent} />
+      {!state.inCombat && state.currentEvent && (
+        <EventModal event={state.currentEvent} onResolve={resolveEvent} />
       )}
 
-      {!gameState.inCombat && gameState.availableDoors.length > 0 && (
-        <DoorSelector doors={gameState.availableDoors} onChoose={handleDoor} disabled={loading} />
+      {!state.inCombat && state.merchantItems.length === 0 && !state.currentEvent && (
+        <DoorSelector doors={state.availableDoors} onChoose={chooseDoor} disabled={loading} />
       )}
+
+      <GameLog logs={state.logs} />
     </div>
   );
 };
