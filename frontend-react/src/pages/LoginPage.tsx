@@ -1,6 +1,6 @@
 // =============================================================================
 // VISTA DE LOGIN (FORMULARIO DE AUTENTICACIÓN)
-// Criterio de Calidad: Cero peticiones fetch en el componente (uso de authService)
+// Criterio de Calidad: Cero peticiones HTTP directas en el componente (uso de authService)
 // =============================================================================
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
