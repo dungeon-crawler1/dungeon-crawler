@@ -1,61 +1,105 @@
 // =============================================================================
-// UTILIDADES PURAS DE RESOLUCIÓN DE COMBATE, PASIVAS Y EVENTOS
+// UTILIDADES PURAS: RECÁLCULO (BASE + SUMA) * (1 + %), COMBATE E INVENTARIO
 // =============================================================================
-import type { Enemy, GameEvent, Hero, ShopItem } from '../types/game';
+import type { Enemy, Hero, ShopItem, SpellId } from '../types/game';
 
-export const MERCHANT_CATALOG: ShopItem[] = [
-  { id: 'pot-small', name: 'Frasco de Curación Pequeño', type: 'POCION', price: 30, hpRestore: 50, attackBonus: 0, description: 'Regenera 50 puntos de vida.' },
-  { id: 'pot-med', name: 'Poción Media de Curación', type: 'POCION', price: 50, hpRestore: 80, attackBonus: 0, description: 'Regenera 80 puntos de vida.' },
-  { id: 'rel-sharp', name: 'Afilador de Acero', type: 'RELIQUIA', price: 120, hpRestore: 0, attackBonus: 10, description: 'Aumenta permanentemente tu daño (+10).' },
-];
+// Recalcula vida máxima y ataque aplicando todos los % sobre (base + suma)
+export function recalculateHeroStats(hero: Hero): Hero {
+  const totalBaseHp = hero.baseMaxHp + hero.flatMaxHpBonus;
+  const computedMaxHp = Math.round(totalBaseHp * (1 + hero.percentMaxHpBonus));
+  const maxHpGain = Math.max(0, computedMaxHp - hero.maxHp);
+  const totalBaseAttack = hero.baseAttack + hero.flatAttackBonus;
+  const computedAttack = Math.round(totalBaseAttack * (1 + hero.percentAttackBonus));
 
-// Calcula el daño físico del héroe aplicando la pasiva del Bárbaro (< 50% HP)
-export function calculateHeroPhysicalDamage(hero: Hero): number {
-  const isEnraged = hero.heroClass === 'BARBARO' && hero.hp < hero.maxHp * 0.5;
-  return isEnraged ? Math.round(hero.attack * 1.4) : hero.attack;
+  return { ...hero, maxHp: computedMaxHp, hp: Math.min(computedMaxHp, hero.hp + maxHpGain), attack: computedAttack };
 }
 
-// Calcula el daño recibido considerando Escudo Arcano y pasivas de Caballero/Pícaro
-export function calculateEnemyCounterAttack(hero: Hero, enemy: Enemy): {
-  damageTaken: number;
-  remainingShields: number;
-  note: string;
-} {
+// Calcula daño físico aplicando porcentajes permanentes, de batalla y furia Bárbaro
+export function calculateHeroPhysicalDamage(hero: Hero): number {
+  const totalBaseAttack = hero.baseAttack + hero.flatAttackBonus;
+  const enragePercent = hero.heroClass === 'BARBARO' && hero.hp < hero.maxHp * 0.5 ? 0.4 : 0;
+  return Math.round(totalBaseAttack * (1 + hero.percentAttackBonus + hero.battleBuffs.damageBoostPercent + enragePercent));
+}
+
+// Calcula daño de hechizos del Mago escalando sobre su base total
+export function calculateSpellDamage(hero: Hero, spell: SpellId): number {
+  const totalBaseAttack = hero.baseAttack + hero.flatAttackBonus;
+  const totalPercent = hero.percentAttackBonus + hero.battleBuffs.damageBoostPercent;
+  const scale = spell === 'RAYO' ? 1.6 : 1.15;
+  return Math.round(totalBaseAttack * (1 + totalPercent) * scale);
+}
+
+// Resuelve contraataque considerando bloqueo, evasión acumulada y reducción de daño
+export function calculateEnemyCounterAttack(hero: Hero, enemy: Enemy) {
+  if (hero.battleBuffs.blockCharges > 0) {
+    return { damageTaken: 0, remainingPotionBlocks: hero.battleBuffs.blockCharges - 1, remainingSpellShields: hero.shieldCharges, note: ' (bloqueado por Poción)' };
+  }
   if (hero.shieldCharges > 0) {
-    return { damageTaken: 0, remainingShields: hero.shieldCharges - 1, note: ' (bloqueado por Escudo Arcano)' };
+    return { damageTaken: 0, remainingPotionBlocks: 0, remainingSpellShields: hero.shieldCharges - 1, note: ' (bloqueado por Escudo Arcano)' };
   }
   if (hero.heroClass === 'CABALLERO' && Math.random() < 0.2) {
-    return { damageTaken: 0, remainingShields: 0, note: ' (bloqueado con escudo)' };
+    return { damageTaken: 0, remainingPotionBlocks: 0, remainingSpellShields: 0, note: ' (bloqueado con escudo)' };
   }
-  if (hero.heroClass === 'PICARO' && Math.random() < 0.2) {
-    return { damageTaken: 0, remainingShields: 0, note: ' (esquivado)' };
+  const totalEvasion = hero.evasionChance + hero.battleBuffs.evasionBonus;
+  if (totalEvasion > 0 && Math.random() < totalEvasion) {
+    return { damageTaken: 0, remainingPotionBlocks: 0, remainingSpellShields: 0, note: ' (esquivado)' };
   }
-  const reduced = hero.heroClass === 'CABALLERO' ? Math.round(enemy.attack * 0.8) : enemy.attack;
-  return { damageTaken: reduced, remainingShields: 0, note: '' };
+  const effectiveReduction = Math.min(0.85, hero.damageReduction + hero.battleBuffs.defenseBonus);
+  return { damageTaken: Math.max(1, Math.round(enemy.attack * (1 - effectiveReduction))), remainingPotionBlocks: 0, remainingSpellShields: 0, note: '' };
 }
 
-// Calcula monedas ganadas al vencer (incluye +25% pasivo del Pícaro)
-export function calculateGoldReward(hero: Hero, enemy: Enemy): number {
-  const multiplier = hero.heroClass === 'PICARO' ? 1.25 : 1;
-  return Math.round(enemy.goldReward * multiplier);
+// Aplica oro y reliquia única al derrotar a un enemigo o jefe
+export function applyVictoryRewards(hero: Hero, enemy: Enemy, updatedMana: number): { hero: Hero; earnedGold: number } {
+  const earnedGold = Math.round(enemy.goldReward * hero.goldMultiplier);
+  const relic = enemy.bossRelic;
+  const victor = recalculateHeroStats({
+    ...hero, mana: updatedMana, gold: hero.gold + earnedGold,
+    relics: relic ? [...hero.relics, relic] : hero.relics,
+    defeatedBosses: enemy.isBoss ? [...hero.defeatedBosses, enemy.name] : hero.defeatedBosses,
+    flatAttackBonus: hero.flatAttackBonus + (relic?.id === 'boss-emp' ? 25 : 0),
+    percentAttackBonus: hero.percentAttackBonus + (relic?.id === 'boss-acid' ? 0.5 : 0),
+    percentMaxHpBonus: hero.percentMaxHpBonus + (relic?.id === 'boss-drac' ? 0.25 : 0),
+    damageReduction: Math.min(0.75, hero.damageReduction + (relic?.id === 'boss-dragon' ? 0.5 : 0)),
+  });
+  return { hero: victor, earnedGold };
 }
 
-// Aplica los efectos de eventos especiales (Fuente de los Deseos, Estatua, Ayuda, Tesoro)
-export function applyEventEffect(hero: Hero, event: GameEvent, accepted: boolean): Hero {
-  const next = { ...hero };
-  if (!accepted) return next;
-
-  if (event.type === 'TREASURE') {
-    next.gold += 75;
-  } else if (event.type === 'HELP_ROOM') {
-    next.hp = Math.min(next.maxHp, next.hp + 30);
-    next.mana = Math.min(next.maxMana, next.mana + 30);
-  } else if (event.type === 'WISH_FOUNTAIN' && next.gold >= 1) {
-    next.gold -= 1;
-    if (Math.random() < 0.05) next.attack += 15;
-  } else if (event.type === 'STATUE' && !next.statueUsed) {
-    next.statueUsed = true;
-    next.attack += 12;
+// Guarda poción en inventario o equipa reliquia recalculando estadísticas
+export function applyShopPurchase(hero: Hero, item: ShopItem): Hero {
+  if (item.type === 'POCION' && item.effectType) {
+    const existing = hero.inventory.find((p) => p.id === item.id);
+    const updatedInventory = existing
+      ? hero.inventory.map((p) => (p.id === item.id ? { ...p, quantity: p.quantity + 1 } : p))
+      : [...hero.inventory, { id: item.id, name: item.name, effectType: item.effectType, value: item.effectValue, durationLabel: item.durationLabel, description: item.description, quantity: 1 }];
+    return { ...hero, gold: hero.gold - item.price, inventory: updatedInventory };
   }
-  return next;
+  return recalculateHeroStats({
+    ...hero, gold: hero.gold - item.price,
+    flatMaxHpBonus: hero.flatMaxHpBonus + item.flatMaxHpBonus,
+    percentMaxHpBonus: hero.percentMaxHpBonus + item.percentMaxHpBonus,
+    flatAttackBonus: hero.flatAttackBonus + item.flatAttackBonus,
+    percentAttackBonus: hero.percentAttackBonus + item.percentAttackBonus,
+    damageReduction: Math.min(0.75, hero.damageReduction + item.reductionBonus),
+    goldMultiplier: hero.goldMultiplier + item.goldBonus,
+    shopDiscount: Math.min(0.6, hero.shopDiscount + item.discountBonus),
+    relics: [...hero.relics, { id: item.id, name: item.name, effectSummary: item.effectSummary, description: item.description }],
+  });
+}
+
+// Consume una poción del inventario durante el combate
+export function consumeInventoryPotion(hero: Hero, potionId: string): { hero: Hero; message: string } {
+  const target = hero.inventory.find((p) => p.id === potionId);
+  if (!target || target.quantity <= 0) return { hero, message: 'No tienes unidades disponibles.' };
+
+  const nextInventory = hero.inventory.map((p) => (p.id === potionId ? { ...p, quantity: p.quantity - 1 } : p)).filter((p) => p.quantity > 0);
+  const nextBuffs = { ...hero.battleBuffs };
+  let nextHp = hero.hp;
+
+  if (target.effectType === 'HEAL') nextHp = Math.min(hero.maxHp, hero.hp + target.value);
+  if (target.effectType === 'DAMAGE_BOOST') nextBuffs.damageBoostPercent = Math.max(nextBuffs.damageBoostPercent, target.value);
+  if (target.effectType === 'EVASION_BOOST') nextBuffs.evasionBonus = Math.min(0.75, nextBuffs.evasionBonus + target.value);
+  if (target.effectType === 'DEFENSE_BOOST') nextBuffs.defenseBonus = Math.min(0.75, nextBuffs.defenseBonus + target.value);
+  if (target.effectType === 'BLOCK_ATTACKS') nextBuffs.blockCharges += target.value;
+
+  return { hero: { ...hero, hp: nextHp, inventory: nextInventory, battleBuffs: nextBuffs }, message: `🧪 Usaste [${target.name}] (${target.durationLabel}): ${target.description}` };
 }

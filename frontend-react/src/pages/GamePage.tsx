@@ -2,6 +2,7 @@
 // VISTA PRINCIPAL DE GAMEPLAY (< 150 LÍNEAS)
 // =============================================================================
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGameEngine } from '../hooks/useGameEngine';
 import { ClassSelector } from '../components/game/ClassSelector';
 import { HealthManaBar } from '../components/game/HealthManaBar';
@@ -11,11 +12,14 @@ import { MerchantModal } from '../components/game/MerchantModal';
 import { EventModal } from '../components/game/EventModal';
 import { GameSummary } from '../components/game/GameSummary';
 import { GameLog } from '../components/game/GameLog';
+import { LeaveConfirmModal } from '../components/game/LeaveConfirmModal';
 
 export const GamePage: React.FC = () => {
+  const navigate = useNavigate();
   const {
-    state, loading, error, selectClass, chooseDoor, attackEnemy,
-    usePotion, castSpell, buyItem, closeMerchant, resolveEvent, forfeitRun, resetRun,
+    state, loading, error, selectClass, chooseDoor, attackEnemy, usePotion,
+    castSpell, buyItem, closeMerchant, resolveEvent, forfeitRun, resetRun,
+    openLeaveConfirm, closeLeaveConfirm,
   } = useGameEngine();
 
   if (!state.hero) {
@@ -28,19 +32,38 @@ export const GamePage: React.FC = () => {
   }
 
   if (state.isFinished) {
-    return <GameSummary reason={state.finishReason} score={state.score} gold={state.hero.gold} onRestart={resetRun} />;
+    return (
+      <GameSummary
+        reason={state.finishReason}
+        score={state.score}
+        gold={state.hero.gold}
+        onRestart={resetRun}
+        onGoHome={() => navigate('/dashboard')}
+      />
+    );
   }
 
   return (
     <div style={{ maxWidth: '900px', margin: '30px auto', padding: '20px' }}>
-      <HealthManaBar hero={state.hero} room={state.currentRoom} score={state.score} onForfeit={forfeitRun} disabled={loading} />
+      {state.showLeaveConfirm && (
+        <LeaveConfirmModal onConfirmLeave={() => navigate('/dashboard')} onCancel={closeLeaveConfirm} />
+      )}
+
+      <HealthManaBar
+        hero={state.hero}
+        room={state.currentRoom}
+        score={state.score}
+        onForfeit={forfeitRun}
+        onRequestLeave={openLeaveConfirm}
+        disabled={loading}
+      />
 
       {state.inCombat && state.enemy && (
         <CombatUI hero={state.hero} enemy={state.enemy} onAttack={attackEnemy} onUsePotion={usePotion} onCastSpell={castSpell} disabled={loading} />
       )}
 
       {!state.inCombat && state.merchantItems.length > 0 && (
-        <MerchantModal items={state.merchantItems} playerGold={state.hero.gold} onBuy={buyItem} onClose={closeMerchant} disabled={loading} />
+        <MerchantModal items={state.merchantItems} isLuxury={state.isLuxuryMerchant} playerGold={state.hero.gold} onBuy={buyItem} onClose={closeMerchant} disabled={loading} />
       )}
 
       {!state.inCombat && state.currentEvent && (
