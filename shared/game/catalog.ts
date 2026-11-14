@@ -1,7 +1,7 @@
 // =============================================================================
 // CATÁLOGOS DE POCIONES Y RELIQUIAS (BONOS PLANOS VS. PORCENTUALES)
 // =============================================================================
-import type { EquippedRelic, ShopItem } from '../types/game';
+import type { EquippedRelic, ShopItem } from './types';
 
 const COMMON_HEALING_POTIONS: ShopItem[] = [
   { id: 'pot-heal-sm', name: 'Frasco de Curación Pequeño', type: 'POCION', price: 30, effectType: 'HEAL', effectValue: 50, durationLabel: 'Instantáneo', effectSummary: '+50 HP', flatAttackBonus: 0, percentAttackBonus: 0, flatMaxHpBonus: 0, percentMaxHpBonus: 0, reductionBonus: 0, goldBonus: 0, discountBonus: 0, description: 'Regenera +50 HP al usarse en batalla.' },

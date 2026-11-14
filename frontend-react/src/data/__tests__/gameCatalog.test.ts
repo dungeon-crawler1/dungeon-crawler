@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildMerchantStock } from '../gameCatalog';
+import { buildMerchantStock } from '../../../../shared/game/catalog';
 import type { EquippedRelic } from '../../types/game';
 
 const relic = (name: string): EquippedRelic => ({ id: name, name, effectSummary: 'x', description: 'x' });

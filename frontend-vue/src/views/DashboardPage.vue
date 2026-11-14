@@ -10,12 +10,26 @@
       <h2>Bienvenido al Calabozo</h2>
       <p>Usuario autenticado: <strong>{{ userEmail }}</strong></p>
       <div style="padding: 15px; background: #e9ecef; border-radius: 6px; margin-top: 20px;">
-        <h3>Estado del Frontend Vue 3 (Issue 10)</h3>
+        <h3>Estado del Frontend Vue 3</h3>
         <ul>
           <li>Autenticación con JWT + Pinia Store: Configurada y persistida</li>
-          <li>Enrutamiento Protegido: Activo en /dashboard vía Vue Router Guard</li>
+          <li>Enrutamiento Protegido: Activo en /dashboard y /game vía Vue Router Guard</li>
           <li>Separación de Capas: Peticiones HTTP aisladas en /services</li>
         </ul>
+      </div>
+
+      <div style="padding: 20px; background: #222; color: #fff; border-radius: 8px; margin-top: 20px; text-align: center;">
+        <h3>⚔️ Mazmorra Procedural</h3>
+        <p style="font-size: 0.9em; color: #ccc;">
+          Elegí tu clase, cruzá las puertas y sobreviví a los combates por turnos.
+        </p>
+        <button
+          class="enter-game"
+          @click="goToGame"
+          style="margin-top: 10px; padding: 10px 18px; background: #28a745; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;"
+        >
+          Entrar a la Mazmorra
+        </button>
       </div>
     </main>
   </div>
@@ -37,5 +51,9 @@ const userEmail = computed(() => authStore.user?.email || 'Jugador');
 function handleLogout(): void {
   authStore.logout();
   router.push('/login');
+}
+
+function goToGame(): void {
+  router.push('/game');
 }
 </script>

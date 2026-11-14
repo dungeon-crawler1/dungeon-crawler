@@ -27,8 +27,16 @@ describe('router', () => {
     const { router } = await setup();
 
     expect(router.getRoutes().map((route) => route.name)).toEqual(
-      expect.arrayContaining(['Login', 'Register', 'Dashboard']),
+      expect.arrayContaining(['Login', 'Register', 'Dashboard', 'Game']),
     );
+  });
+
+  it('protege la ruta de juego y redirige al login sin sesión', async () => {
+    const { router } = await setup();
+
+    await router.push('/game');
+
+    expect(router.currentRoute.value.path).toBe('/login');
   });
 
   it('permite el acceso al dashboard con una sesión válida', async () => {

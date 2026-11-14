@@ -15,6 +15,10 @@ __pycache__/
 venv/
 ENV/
 
+# Artefactos de build
+dist/
+build/
+
 # Cachés de los runners de test de JavaScript
 .vitest/
 coverage/tmp/
