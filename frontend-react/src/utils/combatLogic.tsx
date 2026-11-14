@@ -29,23 +29,37 @@ export function calculateSpellDamage(hero: Hero, spell: SpellId): number {
   return Math.round(totalBaseAttack * (1 + totalPercent) * scale);
 }
 
-// Resuelve contraataque considerando bloqueo, evasión acumulada y reducción de daño
-export function calculateEnemyCounterAttack(hero: Hero, enemy: Enemy) {
-  if (hero.battleBuffs.blockCharges > 0) {
-    return { damageTaken: 0, remainingPotionBlocks: hero.battleBuffs.blockCharges - 1, remainingSpellShields: hero.shieldCharges, note: ' (bloqueado por Poción)' };
-  }
-  if (hero.shieldCharges > 0) {
-    return { damageTaken: 0, remainingPotionBlocks: 0, remainingSpellShields: hero.shieldCharges - 1, note: ' (bloqueado por Escudo Arcano)' };
-  }
-  if (hero.heroClass === 'CABALLERO' && Math.random() < 0.2) {
-    return { damageTaken: 0, remainingPotionBlocks: 0, remainingSpellShields: 0, note: ' (bloqueado con escudo)' };
-  }
+interface CounterAttack {
+  damageTaken: number;
+  remainingPotionBlocks: number;
+  remainingSpellShields: number;
+  note: string;
+}
+
+function blockedAttack(note: string, potionBlocks: number, spellShields: number): CounterAttack {
+  return { damageTaken: 0, remainingPotionBlocks: potionBlocks, remainingSpellShields: spellShields, note };
+}
+
+function knightBlocks(hero: Hero): boolean {
+  return hero.heroClass === 'CABALLERO' && Math.random() < 0.2;
+}
+
+function heroEvades(hero: Hero): boolean {
   const totalEvasion = hero.evasionChance + hero.battleBuffs.evasionBonus;
-  if (totalEvasion > 0 && Math.random() < totalEvasion) {
-    return { damageTaken: 0, remainingPotionBlocks: 0, remainingSpellShields: 0, note: ' (esquivado)' };
-  }
+  return totalEvasion > 0 && Math.random() < totalEvasion;
+}
+
+// Resuelve contraataque considerando bloqueo, evasión acumulada y reducción de daño
+export function calculateEnemyCounterAttack(hero: Hero, enemy: Enemy): CounterAttack {
+  const { blockCharges } = hero.battleBuffs;
+  if (blockCharges > 0) return blockedAttack(' (bloqueado por Poción)', blockCharges - 1, hero.shieldCharges);
+  if (hero.shieldCharges > 0) return blockedAttack(' (bloqueado por Escudo Arcano)', 0, hero.shieldCharges - 1);
+  if (knightBlocks(hero)) return blockedAttack(' (bloqueado con escudo)', 0, 0);
+  if (heroEvades(hero)) return blockedAttack(' (esquivado)', 0, 0);
+
   const effectiveReduction = Math.min(0.85, hero.damageReduction + hero.battleBuffs.defenseBonus);
-  return { damageTaken: Math.max(1, Math.round(enemy.attack * (1 - effectiveReduction))), remainingPotionBlocks: 0, remainingSpellShields: 0, note: '' };
+  const damageTaken = Math.max(1, Math.round(enemy.attack * (1 - effectiveReduction)));
+  return { damageTaken, remainingPotionBlocks: 0, remainingSpellShields: 0, note: '' };
 }
 
 // Aplica oro y reliquia única al derrotar a un enemigo o jefe

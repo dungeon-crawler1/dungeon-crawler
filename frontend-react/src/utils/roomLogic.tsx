@@ -1,30 +1,50 @@
 // =============================================================================
 // UTILIDADES DE RESOLUCIÓN DE PUERTAS, SALAS MISTERIOSAS Y EVENTOS ESPECIALES
 // =============================================================================
-import type { Door, GameEvent, Hero, RoomEventType } from '../types/game';
+import type { Door, Enemy, GameEvent, Hero, RoomEventType, ShopItem } from '../types/game';
 import { buildMerchantStock } from '../data/gameCatalog';
 import { spawnEnemyForRoom } from '../services/gameService';
 import { recalculateHeroStats } from './combatLogic';
 
-// Resuelve la puerta elegida (revelando Salas Misteriosas) y prepara el encuentro
-export function resolveDoorEncounter(door: Door, hero: Hero, score: number) {
-  const mysteryPool: Exclude<RoomEventType, 'MYSTERY'>[] = score > 10
-    ? ['COMBAT', 'ELITE', 'MERCHANT', 'LUXURY_MERCHANT', 'WISH_FOUNTAIN', 'STATUE', 'HELP_ROOM', 'TREASURE']
-    : ['COMBAT', 'MERCHANT', 'WISH_FOUNTAIN', 'STATUE', 'HELP_ROOM', 'TREASURE'];
-  const resolved: Exclude<RoomEventType, 'MYSTERY'> = door.type === 'MYSTERY'
-    ? mysteryPool[Math.floor(Math.random() * mysteryPool.length)] : door.type;
-  const note = door.type === 'MYSTERY' ? `❓ Sala Misteriosa reveló: ${resolved}. ` : '';
+type ResolvedType = Exclude<RoomEventType, 'MYSTERY'>;
 
-  if (resolved === 'COMBAT' || resolved === 'ELITE' || resolved === 'BOSS') {
-    const enemy = spawnEnemyForRoom(resolved, hero.defeatedBosses);
-    return { inCombat: true, enemy, merchantItems: [], isLuxuryMerchant: false, currentEvent: null, log: `${note}Entraste a ${door.title}: aparece ${enemy.name} (${enemy.hp} HP).` };
-  }
-  if (resolved === 'MERCHANT' || resolved === 'LUXURY_MERCHANT') {
-    const isLuxury = resolved === 'LUXURY_MERCHANT';
-    const stock = buildMerchantStock(isLuxury, hero.relics, hero.shopDiscount);
-    return { inCombat: false, enemy: null, merchantItems: stock, isLuxuryMerchant: isLuxury, currentEvent: null, log: `${note}Entraste al ${isLuxury ? 'Mercader de Lujo' : 'Mercader Común'}.` };
-  }
-  return { inCombat: false, enemy: null, merchantItems: [], isLuxuryMerchant: false, currentEvent: { title: door.title, description: door.description, type: resolved }, log: `${note}Entraste a ${door.title}.` };
+interface Encounter {
+  inCombat: boolean;
+  enemy: Enemy | null;
+  merchantItems: ShopItem[];
+  isLuxuryMerchant: boolean;
+  currentEvent: GameEvent | null;
+  log: string;
+}
+
+const EARLY_MYSTERY: ResolvedType[] = ['COMBAT', 'MERCHANT', 'WISH_FOUNTAIN', 'STATUE', 'HELP_ROOM', 'TREASURE'];
+const LATE_MYSTERY: ResolvedType[] = ['COMBAT', 'ELITE', 'MERCHANT', 'LUXURY_MERCHANT', 'WISH_FOUNTAIN', 'STATUE', 'HELP_ROOM', 'TREASURE'];
+
+function revealDoorType(door: Door, score: number): { type: ResolvedType; note: string } {
+  if (door.type !== 'MYSTERY') return { type: door.type, note: '' };
+  const pool = score > 10 ? LATE_MYSTERY : EARLY_MYSTERY;
+  const type = pool[Math.floor(Math.random() * pool.length)];
+  return { type, note: `❓ Sala Misteriosa reveló: ${type}. ` };
+}
+
+function buildCombatEncounter(type: ResolvedType, door: Door, hero: Hero, note: string): Encounter {
+  const enemy = spawnEnemyForRoom(type as 'COMBAT' | 'ELITE' | 'BOSS', hero.defeatedBosses);
+  return { inCombat: true, enemy, merchantItems: [], isLuxuryMerchant: false, currentEvent: null, log: `${note}Entraste a ${door.title}: aparece ${enemy.name} (${enemy.hp} HP).` };
+}
+
+function buildMerchantEncounter(isLuxury: boolean, door: Door, hero: Hero, note: string): Encounter {
+  const stock = buildMerchantStock(isLuxury, hero.relics, hero.shopDiscount);
+  const nombre = isLuxury ? 'Mercader de Lujo' : 'Mercader Común';
+  return { inCombat: false, enemy: null, merchantItems: stock, isLuxuryMerchant: isLuxury, currentEvent: null, log: `${note}Entraste al ${nombre}.` };
+}
+
+// Resuelve la puerta elegida (revelando Salas Misteriosas) y prepara el encuentro
+export function resolveDoorEncounter(door: Door, hero: Hero, score: number): Encounter {
+  const { type, note } = revealDoorType(door, score);
+  if (type === 'COMBAT' || type === 'ELITE' || type === 'BOSS') return buildCombatEncounter(type, door, hero, note);
+  if (type === 'MERCHANT' || type === 'LUXURY_MERCHANT') return buildMerchantEncounter(type === 'LUXURY_MERCHANT', door, hero, note);
+  const currentEvent = { title: door.title, description: door.description, type };
+  return { inCombat: false, enemy: null, merchantItems: [], isLuxuryMerchant: false, currentEvent, log: `${note}Entraste a ${door.title}.` };
 }
 
 // Aplica los efectos de eventos especiales (Tesoro, Ayuda, Fuente y Estatua)

@@ -20,40 +20,49 @@ const ALL_BOSSES: Enemy[] = [
   { name: 'Drácula', hp: 400, maxHp: 400, attack: 42, goldReward: 500, isBoss: true, bossRelic: { id: 'boss-drac', name: 'Vampirismo Completo', effectSummary: '+25 % Vida máxima', description: 'Aumenta la vida máxima en +25 %.' } },
 ];
 
+type WeightedDoor = Omit<Door, 'id'> & { weight: number };
+
+const BASE_DOORS: WeightedDoor[] = [
+  { type: 'COMBAT', icon: '⚔️', title: 'Cámara de Combate', description: 'Enemigos acechan tras la puerta.', weight: 40 },
+  { type: 'MERCHANT', icon: '🛒', title: 'Mercader Común', description: 'Pociones y reliquias básicas.', weight: 20 },
+  { type: 'HELP_ROOM', icon: '🔥', title: 'Sala de Ayuda', description: 'Descanso para recuperar vida o maná.', weight: 12 },
+  { type: 'MYSTERY', icon: '❓', title: 'Sala Misteriosa', description: 'Evento aleatorio oculto.', weight: 12 },
+  { type: 'WISH_FOUNTAIN', icon: '⛲', title: 'Fuente de los Deseos', description: 'Arroja 1 moneda (5 % probabilidad de buff).', weight: 11 },
+  { type: 'TREASURE', icon: '💰', title: 'Sala del Tesoro', description: 'Cofre con monedas o reliquias.', weight: 5 },
+  { type: 'STATUE', icon: '🗿', title: 'Estatua Sagrada', description: 'Bendición única de clase (1 por partida).', weight: 5 },
+];
+
+const LATE_DOORS: WeightedDoor[] = [
+  { type: 'ELITE', icon: '💀', title: 'Combate de Élite', description: 'Enemigos de alto nivel y mayor botín.', weight: 22 },
+  { type: 'LUXURY_MERCHANT', icon: '💎', title: 'Mercader de Lujo', description: 'Reliquias avanzadas y súper pociones.', weight: 9 },
+];
+
+function buildDoorPool(roomsCleared: number): WeightedDoor[] {
+  const pool = [...BASE_DOORS];
+  if (roomsCleared > 10) pool.push(...LATE_DOORS);
+  return pool;
+}
+
 export function generateProceduralDoors(roomsCleared: number, defeatedBosses: string[]): Door[] {
-  const weightedPool: Array<Omit<Door, 'id'> & { weight: number }> = [
-    { type: 'COMBAT', icon: '⚔️', title: 'Cámara de Combate', description: 'Enemigos acechan tras la puerta.', weight: 40 },
-    { type: 'MERCHANT', icon: '🛒', title: 'Mercader Común', description: 'Pociones y reliquias básicas.', weight: 20 },
-    { type: 'HELP_ROOM', icon: '🔥', title: 'Sala de Ayuda', description: 'Descanso para recuperar vida o maná.', weight: 12 },
-    { type: 'MYSTERY', icon: '❓', title: 'Sala Misteriosa', description: 'Evento aleatorio oculto.', weight: 12 },
-    { type: 'WISH_FOUNTAIN', icon: '⛲', title: 'Fuente de los Deseos', description: 'Arroja 1 moneda (5 % probabilidad de buff).', weight: 11 },
-    { type: 'TREASURE', icon: '💰', title: 'Sala del Tesoro', description: 'Cofre con monedas o reliquias.', weight: 5 },
-    { type: 'STATUE', icon: '🗿', title: 'Estatua Sagrada', description: 'Bendición única de clase (1 por partida).', weight: 5 },
-  ];
-
-  if (roomsCleared > 10) {
-    weightedPool.push({ type: 'ELITE', icon: '💀', title: 'Combate de Élite', description: 'Enemigos de alto nivel y mayor botín.', weight: 22 });
-    weightedPool.push({ type: 'LUXURY_MERCHANT', icon: '💎', title: 'Mercader de Lujo', description: 'Reliquias avanzadas y súper pociones.', weight: 9 });
-  }
-
+  const weightedPool = buildDoorPool(roomsCleared);
   const doorCount = Math.random() < 0.5 ? 2 : 3;
   const available = [...weightedPool];
-  const selected: Omit<Door, 'id'>[] = [];
+  const chosenDoors: Omit<Door, 'id'>[] = [];
 
-  while (selected.length < doorCount && available.length > 0) {
+  while (chosenDoors.length < doorCount && available.length > 0) {
     const totalWeight = available.reduce((acc, item) => acc + item.weight, 0);
     let roll = Math.random() * totalWeight;
     const idx = available.findIndex((item) => { roll -= item.weight; return roll <= 0; });
     const { weight: _w, ...doorData } = available.splice(idx >= 0 ? idx : 0, 1)[0];
-    selected.push(doorData);
+    chosenDoors.push(doorData);
   }
 
   const remainingBosses = ALL_BOSSES.filter((b) => !defeatedBosses.includes(b.name));
   if (roomsCleared >= 20 && roomsCleared % 10 === 0 && remainingBosses.length > 0) {
-    selected[0] = { type: 'BOSS', icon: '👑', title: 'Cámara del Jefe', description: 'Un jefe legendario custodia esta sala.' };
+    chosenDoors[0] = { type: 'BOSS', icon: '👑', title: 'Cámara del Jefe', description: 'Un jefe legendario custodia esta sala.' };
   }
 
-  return selected.map((d, idx) => ({ ...d, id: `door-${roomsCleared}-${idx}-${Math.random().toString(36).slice(2, 6)}` }));
+  return chosenDoors.map((d, idx) => ({ ...d, id: `door-${roomsCleared}-${idx}-${Math.random().toString(36).slice(2, 6)}` }));
 }
 
 export function spawnEnemyForRoom(type: 'COMBAT' | 'ELITE' | 'BOSS', defeatedBosses: string[]): Enemy {
