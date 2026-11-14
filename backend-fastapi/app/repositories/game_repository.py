@@ -15,7 +15,7 @@ async def create_run(user_id: int, clase: str, vida_actual: int, vida_maxima: in
                RETURNING *''',
             user_id, clase, vida_actual, vida_maxima, ataque, defensa, json.dumps(estado_run)
         )
-        return dict(row)
+        return dict(row) if row else None
 
 # Actualizar el estado de una partida tras ejecutar un turno ($1 al $6)
 async def update_run(run_id: int, vida_actual: int, monedas: int, puntuacion: int, resultado: str, estado_run: dict):
@@ -28,7 +28,7 @@ async def update_run(run_id: int, vida_actual: int, monedas: int, puntuacion: in
                RETURNING *''',
             vida_actual, monedas, puntuacion, resultado, json.dumps(estado_run), run_id
         )
-        return dict(row)
+        return dict(row) if row else None
 
 # Obtener el Top 10 Global de puntuaciones ordenado descendentemente
 async def get_top_10_global():

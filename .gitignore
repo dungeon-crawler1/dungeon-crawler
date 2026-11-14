@@ -9,9 +9,17 @@ npm-debug.log*
 # Archivos de caché y entornos virtuales de Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.coverage
 .venv/
 venv/
 ENV/
+
+# Cachés de los runners de test de JavaScript
+.vitest/
+coverage/tmp/
+coverage/.tmp/
+**/coverage/lcov-report/
 
 # Archivos del sistema operativo e IDEs
 .DS_Store

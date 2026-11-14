@@ -8,6 +8,17 @@ Detalle completo en [`docs/EVALUACION.md`](docs/EVALUACION.md).
 # dungeon-crawler
 proyecto final de programacion 3
 
+## Tests y cobertura
+
+Cada servicio tiene su propia suite y genera su artefacto de cobertura. Todas corren sin base de datos ni servicios externos.
+
+| Servicio | Comando | Artefacto |
+| :--- | :--- | :--- |
+| FastAPI | `cd backend-fastapi && pip install -r requirements.txt && pytest --cov=app --cov-report=json:coverage.json` | `backend-fastapi/coverage.json` |
+| Express | `cd backend-express && npm ci && npm run test:coverage` | `backend-express/coverage/lcov.info` |
+| React | `cd frontend-react && npm ci && npm run test:coverage` | `frontend-react/coverage/coverage-summary.json` |
+| Vue | `cd frontend-vue && npm ci && npm run test:coverage` | `frontend-vue/coverage/coverage-summary.json` |
+
 ## Título del Proyecto y Resumen General
 - Nombre del Proyecto: Aplicación Web de Videojuego Roguelike Interactivo por Turnos con Eventos Procedurales.
 - Resumen: Aplicación web interactiva donde el jugador selecciona una clase de personaje e ingresa a una mazmorra procedural con bifurcación de caminos (2-3 puertas). Cada habitación presenta un evento aleatorio (combates, mercaderes, fuentes de deseos, estatuas sagradas, salas de ayuda, salas de tesoros o jefes). Al finalizar cada partida (por derrota o retiro), los resultados y las estadísticas detalladas paso a paso se registran en una base de datos centralizada, alimentando una tabla de clasificación global (Leaderboard) y un historial de usuario.

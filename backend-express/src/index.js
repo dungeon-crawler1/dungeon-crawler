@@ -17,7 +17,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/game', gameRoutes);
 
-// Manejador genérico DBG=0
-app.listen(port, () => {
-  // Servidor en ejecución sin logs ruidosos en producción
-});
+// Se exporta la app para poder testearla sin levantar el puerto
+module.exports = app;
+
+// Manejador genérico DBG=0: sólo escucha cuando se ejecuta como programa principal
+if (require.main === module) {
+  app.listen(port, () => {
+    // Servidor en ejecución sin logs ruidosos en producción
+  });
+}

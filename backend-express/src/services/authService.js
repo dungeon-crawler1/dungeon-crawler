@@ -2,6 +2,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
+const { getJwtSecret } = require('../config/auth');
 
 // Registro de usuario con hash seguro bcrypt
 async function register(email, password) {
@@ -23,8 +24,7 @@ async function login(email, password) {
   if (!validPassword) {
     throw new Error('Credenciales inválidas');
   }
-  const secret = process.env.JWT_SECRET || 'supersecretkey123';
-  const token = jwt.sign({ id: user.id, email: user.email }, secret, { expiresIn: '24h' });
+  const token = jwt.sign({ id: user.id, email: user.email }, getJwtSecret(), { expiresIn: '24h' });
   return { token, user: { id: user.id, email: user.email } };
 }
 

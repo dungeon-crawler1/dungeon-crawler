@@ -4,7 +4,9 @@
   "description": "Backend Roguelike Express",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "test": "node --test",
+    "test:coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-include=src/** --test-reporter=lcov --test-reporter-destination=coverage/lcov.info"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
