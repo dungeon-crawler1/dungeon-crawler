@@ -21,11 +21,11 @@ export const LeaderboardSection: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [globalResponse, userResponse] = await Promise.all([fetchGlobalLeaderboard(), fetchUserLeaderboard()]);
-      setGlobalEntries(globalResponse.data ?? []);
-      setUserEntries(userResponse.data ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudieron cargar las puntuaciones');
+      const [globalResult, userResult] = await Promise.allSettled([fetchGlobalLeaderboard(), fetchUserLeaderboard()]);
+      if (globalResult.status === 'fulfilled') setGlobalEntries(globalResult.value.data ?? []);
+      else setError(globalResult.reason instanceof Error ? globalResult.reason.message : 'No se pudo cargar el top global');
+      if (userResult.status === 'fulfilled') setUserEntries(userResult.value.data ?? []);
+      else setError(userResult.reason instanceof Error ? userResult.reason.message : 'No se pudo cargar tu historial');
     } finally {
       setLoading(false);
     }

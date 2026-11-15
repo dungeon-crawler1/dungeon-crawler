@@ -25,15 +25,16 @@ export const LeaderboardTable: React.FC<Props> = ({ title, entries, loading, err
     <h3 style={{ marginTop: 0 }}>{title}</h3>
     {loading && <p>Cargando puntuaciones...</p>}
     {error && <p style={{ color: '#ff8a8a' }}>{error}</p>}
-    {!loading && !error && entries.length === 0 && <p style={{ color: '#aaa' }}>Todavía no hay partidas registradas.</p>}
-    {entries.length > 0 && (
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88em' }}>
+    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88em' }}>
         <thead>
           <tr style={{ color: '#ffd166', textAlign: 'left' }}>
             <th>#</th><th>Jugador</th><th>Clase</th><th>Puntos</th><th>Resultado</th><th>Fecha</th>
           </tr>
         </thead>
         <tbody>
+          {!loading && !error && entries.length === 0 && (
+            <tr><td colSpan={6} style={{ padding: '10px 0', color: '#aaa' }}>Todavía no hay partidas registradas.</td></tr>
+          )}
           {entries.map((entry, index) => (
             <tr
               key={entry.id}
@@ -50,6 +51,5 @@ export const LeaderboardTable: React.FC<Props> = ({ title, entries, loading, err
           ))}
         </tbody>
       </table>
-    )}
   </section>
 );

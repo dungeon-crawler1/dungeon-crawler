@@ -1,5 +1,5 @@
 <template>
-  <div style="max-width: 800px; margin: 40px auto; padding: 20px;">
+  <div style="max-width: 980px; margin: 40px auto; padding: 20px;">
     <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
       <h1>Panel Principal - Roguelike Game (Vue)</h1>
       <button @click="handleLogout" style="padding: 8px 16px; background: #dc3545; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
@@ -31,6 +31,8 @@
           Entrar a la Mazmorra
         </button>
       </div>
+
+      <LeaderboardSection />
     </main>
   </div>
 </template>
@@ -42,6 +44,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
+import LeaderboardSection from '../components/leaderboard/LeaderboardSection.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
