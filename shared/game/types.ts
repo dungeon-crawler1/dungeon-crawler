@@ -2,9 +2,28 @@
 // TIPOS E INTERFACES DEL MOTOR ROGUELIKE (MODIFICADORES BASE Y PORCENTUALES)
 // =============================================================================
 export type HeroClassId = 'CABALLERO' | 'BARBARO' | 'PICARO' | 'MAGO';
-export type SpellId = 'BOLA_FUEGO' | 'RAYO' | 'ESCUDO' | 'ESCAPE';
-export type PotionEffectType = 'HEAL' | 'DAMAGE_BOOST' | 'EVASION_BOOST' | 'DEFENSE_BOOST' | 'BLOCK_ATTACKS';
+export type SpellId = 'BOLA_FUEGO' | 'RAYO' | 'ESCUDO' | 'ESCAPE' | 'EVASION' | 'FUERZA';
+export type PotionEffectType = 'HEAL' | 'DAMAGE_BOOST' | 'EVASION_BOOST' | 'DEFENSE_BOOST' | 'BLOCK_ATTACKS' | 'HEAL_FULL' | 'ESCAPE_ROOM';
 export type RoomEventType = 'COMBAT' | 'ELITE' | 'BOSS' | 'MERCHANT' | 'LUXURY_MERCHANT' | 'WISH_FOUNTAIN' | 'STATUE' | 'HELP_ROOM' | 'TREASURE' | 'MYSTERY';
+
+// Habilidades pasivas o ataques especiales de enemigos y jefes
+export type EnemyAbility =
+  | 'REVIVE' | 'STUN' | 'DOUBLE_ATTACK' | 'KAMIKAZE' | 'CRITICAL' | 'EVADE'
+  | 'HARD_SKIN' | 'ACID' | 'FIRE' | 'DRAIN' | 'ROCKS' | 'CHARGE' | 'REGEN' | 'LIFESTEAL';
+
+export interface EnemyStatuses {
+  stunTurns: number;
+  acidTurns: number;
+  burnTurns: number;
+}
+
+export interface HeroStatuses {
+  evasionTurns: number;
+  strengthTurns: number;
+  stunTurns: number;
+  acidTurns: number;
+  burnTurns: number;
+}
 
 export interface EquippedRelic {
   id: string;
@@ -57,9 +76,22 @@ export interface Hero {
   statueUsed: boolean;
   relics: EquippedRelic[];
   defeatedBosses: string[];
+  // Extensiones de la especificación de juego
+  percentMaxManaBonus?: number;
+  spellCostMultiplier?: number;
+  lifestealOnKill?: number;
+  maxHpPerKill?: number;
+  firstTurnDamageBonus?: number;
+  previewEnabled?: boolean;
+  statuses?: HeroStatuses;
+  turn?: number;
+  defeatedEnemies?: number;
+  burnDamage?: number;
+  acidDamage?: number;
 }
 
 export interface Enemy {
+  id?: string;
   name: string;
   hp: number;
   maxHp: number;
@@ -68,6 +100,14 @@ export interface Enemy {
   isElite?: boolean;
   isBoss?: boolean;
   bossRelic?: EquippedRelic;
+  ability?: EnemyAbility;
+  damageReduction?: number;
+  evasionChance?: number;
+  revived?: boolean;
+  rewarded?: boolean;
+  statuses?: EnemyStatuses;
+  chargeTurns?: number;
+  specialCooldown?: number;
 }
 
 export interface ShopItem {
@@ -86,7 +126,15 @@ export interface ShopItem {
   reductionBonus: number;
   goldBonus: number;
   discountBonus: number;
+  percentMaxManaBonus?: number;
   description: string;
+}
+
+export interface DoorPreview {
+  enemies?: Enemy[];
+  merchantItems?: ShopItem[];
+  isLuxuryMerchant?: boolean;
+  event?: GameEvent;
 }
 
 export interface Door {
@@ -95,12 +143,17 @@ export interface Door {
   icon: string;
   title: string;
   description: string;
+  preview?: string;
+  previewData?: DoorPreview;
 }
 
 export interface GameEvent {
   title: string;
   description: string;
   type: 'WISH_FOUNTAIN' | 'STATUE' | 'HELP_ROOM' | 'TREASURE';
+  statues?: HeroClassId[];
+  helpType?: 'HOGUERA' | 'CABANA' | 'ESTANQUE' | 'COMEDOR';
+  cost?: number;
 }
 
 export interface GameState {
@@ -110,6 +163,8 @@ export interface GameState {
   score: number;
   inCombat: boolean;
   enemy: Enemy | null;
+  enemies?: Enemy[];
+  targetIndex?: number;
   availableDoors: Door[];
   merchantItems: ShopItem[];
   isLuxuryMerchant: boolean;

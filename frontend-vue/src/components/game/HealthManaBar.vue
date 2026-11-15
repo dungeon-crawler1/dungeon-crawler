@@ -52,6 +52,7 @@
       </div>
     </div>
 
+    <div v-if="statusText" style="font-size: 0.8em; color: #ffd166; margin-top: 6px;">✨ {{ statusText }}</div>
     <RelicsDropdown :relics="hero.relics" />
   </div>
 </template>
@@ -62,6 +63,7 @@
 // =============================================================================
 import { computed, ref } from 'vue';
 import type { Hero } from '../../types/game';
+import { heroStatuses } from '../../utils/combatLogic';
 import RelicsDropdown from './RelicsDropdown.vue';
 
 const props = defineProps<{ hero: Hero; room: number; score: number; disabled: boolean }>();
@@ -77,6 +79,16 @@ const totalReductionPct = computed(() => Math.round(Math.min(0.85, props.hero.da
 const totalEvasionPct = computed(() => Math.round((props.hero.evasionChance + props.hero.battleBuffs.evasionBonus) * 100));
 const extraGoldPct = computed(() => Math.round((props.hero.goldMultiplier - 1) * 100));
 const discountPct = computed(() => Math.round(props.hero.shopDiscount * 100));
+const statusText = computed(() => {
+  const statuses = heroStatuses(props.hero);
+  return [
+    statuses.stunTurns > 0 ? 'Aturdido' : '',
+    statuses.evasionTurns > 0 ? `Evasión ${statuses.evasionTurns}t` : '',
+    statuses.strengthTurns > 0 ? `Fuerza ${statuses.strengthTurns}t` : '',
+    statuses.burnTurns > 0 ? `Quemadura ${statuses.burnTurns}t` : '',
+    statuses.acidTurns > 0 ? `Ácido ${statuses.acidTurns}t` : '',
+  ].filter(Boolean).join(' | ');
+});
 
 function buttonStyle(background: string) {
   return { padding: '6px 12px', background, color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' };

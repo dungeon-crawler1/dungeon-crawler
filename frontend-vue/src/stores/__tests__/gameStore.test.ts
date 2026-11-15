@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   startGameRun: vi.fn(),
   syncRunTurn: vi.fn(),
   spawnEnemyForRoom: vi.fn(),
+  spawnEncounterForRoom: vi.fn(),
 }));
 
 vi.mock('../../services/gameService', async (importOriginal) => {
@@ -16,7 +17,7 @@ vi.mock('../../services/gameService', async (importOriginal) => {
 
 vi.mock('../../../../shared/game/gameContent', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../shared/game/gameContent')>();
-  return { ...actual, spawnEnemyForRoom: mocks.spawnEnemyForRoom };
+  return { ...actual, spawnEnemyForRoom: mocks.spawnEnemyForRoom, spawnEncounterForRoom: mocks.spawnEncounterForRoom };
 });
 
 import { useGameStore } from '../gameStore';
@@ -46,6 +47,7 @@ beforeEach(() => {
   mocks.startGameRun.mockReset();
   mocks.syncRunTurn.mockReset().mockResolvedValue(undefined);
   mocks.spawnEnemyForRoom.mockReset();
+  mocks.spawnEncounterForRoom.mockReset();
 });
 
 describe('selectClass', () => {
@@ -68,7 +70,7 @@ describe('selectClass', () => {
 describe('chooseDoor', () => {
   it('inicia un combate con el enemigo generado', () => {
     store.state = startedState();
-    mocks.spawnEnemyForRoom.mockReturnValue(makeEnemy());
+    mocks.spawnEncounterForRoom.mockReturnValue([makeEnemy()]);
     store.chooseDoor(door());
     expect(store.state.inCombat).toBe(true);
     expect(store.state.enemy?.name).toBe('Orco');
@@ -113,7 +115,7 @@ describe('combate', () => {
   });
 
   it('el escudo arcano consume maná y carga dos bloqueos', async () => {
-    store.state = startedState({ inCombat: true, enemy: makeEnemy(), hero: makeHero({ heroClass: 'MAGO', mana: 100, maxMana: 100 }) });
+    store.state = startedState({ hero: makeHero({ heroClass: 'MAGO', mana: 100, maxMana: 100 }) });
     await store.castSpell('ESCUDO');
     expect(store.state.hero?.mana).toBe(60);
     expect(store.state.hero?.shieldCharges).toBe(2);

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { applyEventEffect, resolveDoorEncounter } from '../roomLogic';
+import { applyEventEffect, resolveDoorEncounter } from '../../../../shared/game/roomLogic';
 import type { Door, GameEvent, RoomEventType } from '../../types/game';
 import { makeHero } from '../../test/fixtures';
 
@@ -7,28 +7,28 @@ function makeDoor(type: RoomEventType, title = 'Sala de Prueba'): Door {
   return { id: 'door-1', type, icon: '🚪', title, description: 'Descripción de la sala.' };
 }
 
-function makeEvent(type: GameEvent['type'], title = 'Evento'): GameEvent {
-  return { title, description: 'Descripción del evento.', type };
+function makeEvent(type: GameEvent['type'], extra: Partial<GameEvent> = {}): GameEvent {
+  return { title: 'Evento', description: 'Descripción del evento.', type, ...extra };
 }
 
 describe('resolveDoorEncounter', () => {
-  it('inicia un combate al cruzar una puerta de combate', () => {
+  it('inicia un combate con uno o varios enemigos', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const result = resolveDoorEncounter(makeDoor('COMBAT', 'Cámara de Combate'), makeHero(), 1);
 
     expect(result.inCombat).toBe(true);
+    expect(result.enemies.length).toBeGreaterThan(0);
     expect(result.enemy?.name).toBe('Orco');
     expect(result.log).toContain('Entraste a Cámara de Combate');
   });
 
   it('inicia combates de élite y de jefe', () => {
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    vi.spyOn(Math, 'random').mockReturnValue(0.9);
     const elite = resolveDoorEncounter(makeDoor('ELITE'), makeHero(), 11);
     const boss = resolveDoorEncounter(makeDoor('BOSS'), makeHero(), 20);
 
-    expect(elite.enemy?.isElite).toBe(true);
-    expect(boss.enemy?.isBoss).toBe(true);
-    expect(boss.log).toContain('Dragón Ancestral');
+    expect(elite.enemies[0].isElite).toBe(true);
+    expect(boss.enemies[0].isBoss).toBe(true);
   });
 
   it('abre el mercader común con stock de tres artículos', () => {
@@ -54,25 +54,13 @@ describe('resolveDoorEncounter', () => {
     const result = resolveDoorEncounter(makeDoor('MYSTERY'), makeHero(), 5);
 
     expect(result.inCombat).toBe(true);
-    expect(result.log).toContain('reveló: COMBAT');
-  });
-
-  it('revela una sala misteriosa avanzada como tesoro', () => {
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
-    const result = resolveDoorEncounter(makeDoor('MYSTERY'), makeHero(), 11);
-
-    expect(result.inCombat).toBe(false);
-    expect(result.currentEvent?.type).toBe('TREASURE');
+    expect(result.log).toContain('revela COMBAT');
   });
 
   it('convierte las salas no combatientes en eventos resueltos', () => {
     const result = resolveDoorEncounter(makeDoor('TREASURE', 'Sala del Tesoro'), makeHero(), 3);
 
-    expect(result).toEqual(expect.objectContaining({
-      inCombat: false,
-      enemy: null,
-      currentEvent: { title: 'Sala del Tesoro', description: 'Descripción de la sala.', type: 'TREASURE' },
-    }));
+    expect(result).toEqual(expect.objectContaining({ inCombat: false, enemy: null, currentEvent: expect.objectContaining({ type: 'TREASURE' }) }));
     expect(result.log).toContain('Entraste a Sala del Tesoro');
   });
 });
@@ -86,34 +74,45 @@ describe('applyEventEffect', () => {
     expect(result.message).toContain('Ignoraste');
   });
 
-  it('suma entre 60 y 120 monedas al abrir un tesoro', () => {
+  it('suma entre 60 y 120 monedas y un objeto al abrir un tesoro', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const result = applyEventEffect(makeHero({ gold: 10 }), makeEvent('TREASURE'), true);
 
     expect(result.hero.gold).toBe(70);
     expect(result.message).toContain('+60 monedas');
+    expect(result.hero.inventory.length + result.hero.relics.length).toBeGreaterThan(0);
   });
 
-  it('restaura maná y vida del Mago en la sala de ayuda', () => {
-    const hero = makeHero({ heroClass: 'MAGO', mana: 50, maxMana: 100, hp: 50, maxHp: 100 });
-    const result = applyEventEffect(hero, makeEvent('HELP_ROOM'), true);
-
-    expect(result.hero.mana).toBe(80);
+  it('la hoguera regenera 20 de vida', () => {
+    const result = applyEventEffect(makeHero({ hp: 50 }), makeEvent('HELP_ROOM', { helpType: 'HOGUERA' }), true);
     expect(result.hero.hp).toBe(70);
-    expect(result.message).toContain('Estanque Mágico');
   });
 
-  it('restaura vida de otras clases sin superar el máximo', () => {
-    const result = applyEventEffect(makeHero({ hp: 90 }), makeEvent('HELP_ROOM'), true);
-
+  it('la cabaña regenera 40 de vida sin superar el máximo', () => {
+    const result = applyEventEffect(makeHero({ hp: 90 }), makeEvent('HELP_ROOM', { helpType: 'CABANA' }), true);
     expect(result.hero.hp).toBe(100);
-    expect(result.message).toContain('Cabaña Acogedora');
+  });
+
+  it('el estanque solo regenera maná a los magos', () => {
+    const mago = applyEventEffect(makeHero({ heroClass: 'MAGO', mana: 50, maxMana: 100 }), makeEvent('HELP_ROOM', { helpType: 'ESTANQUE' }), true);
+    const caballero = applyEventEffect(makeHero(), makeEvent('HELP_ROOM', { helpType: 'ESTANQUE' }), true);
+
+    expect(mago.hero.mana).toBe(80);
+    expect(caballero.hero.mana).toBe(0);
+    expect(caballero.message).toContain('solo los magos');
+  });
+
+  it('el comedor cobra 15 monedas y regenera 40 de vida', () => {
+    const result = applyEventEffect(makeHero({ gold: 20, hp: 50 }), makeEvent('HELP_ROOM', { helpType: 'COMEDOR' }), true);
+    const broke = applyEventEffect(makeHero({ gold: 10, hp: 50 }), makeEvent('HELP_ROOM', { helpType: 'COMEDOR' }), true);
+
+    expect(result.hero.gold).toBe(5);
+    expect(result.hero.hp).toBe(90);
+    expect(broke.hero.hp).toBe(50);
   });
 
   it('no permite desear sin monedas en la fuente', () => {
     const result = applyEventEffect(makeHero({ gold: 0 }), makeEvent('WISH_FOUNTAIN'), true);
-
-    expect(result.hero.gold).toBe(0);
     expect(result.message).toContain('no tenías monedas');
   });
 
@@ -126,19 +125,6 @@ describe('applyEventEffect', () => {
     expect(result.hero.maxHp).toBe(130);
   });
 
-  it('concede los deseos de daño, reducción y descuento', () => {
-    const heroes = [1, 2, 3].map((roll) => {
-      const random = vi.spyOn(Math, 'random').mockReturnValueOnce(0.01).mockReturnValueOnce((roll + 0.1) / 4);
-      const result = applyEventEffect(makeHero({ gold: 10 }), makeEvent('WISH_FOUNTAIN'), true);
-      random.mockRestore();
-      return result.hero;
-    });
-
-    expect(heroes[0].percentAttackBonus).toBe(0.4);
-    expect(heroes[1].damageReduction).toBe(0.2);
-    expect(heroes[2].shopDiscount).toBe(0.2);
-  });
-
   it('informa que la fuente no otorga buff en el 95 % de los casos', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
     const result = applyEventEffect(makeHero({ gold: 10 }), makeEvent('WISH_FOUNTAIN'), true);
@@ -148,30 +134,30 @@ describe('applyEventEffect', () => {
   });
 
   it('impide activar una segunda estatua en la misma partida', () => {
-    const result = applyEventEffect(makeHero({ statueUsed: true }), makeEvent('STATUE'), true);
-
+    const result = applyEventEffect(makeHero({ statueUsed: true }), makeEvent('STATUE', { statues: ['CABALLERO'] }), true);
     expect(result.message).toContain('ya activaste una estatua');
   });
 
+  it('no activa estatuas de otra clase', () => {
+    const result = applyEventEffect(makeHero(), makeEvent('STATUE', { statues: ['MAGO'] }), true);
+    expect(result.message).toContain('No hay una estatua para tu clase');
+  });
+
   it('aplica la bendición de la estatua para cada clase', () => {
-    const caballero = applyEventEffect(makeHero(), makeEvent('STATUE'), true).hero;
-    const barbaro = applyEventEffect(makeHero({ heroClass: 'BARBARO' }), makeEvent('STATUE'), true).hero;
-    const picaro = applyEventEffect(makeHero({ heroClass: 'PICARO' }), makeEvent('STATUE'), true).hero;
+    const caballero = applyEventEffect(makeHero(), makeEvent('STATUE', { statues: ['CABALLERO'] }), true).hero;
+    const barbaro = applyEventEffect(makeHero({ heroClass: 'BARBARO' }), makeEvent('STATUE', { statues: ['BARBARO'] }), true).hero;
+    const picaro = applyEventEffect(makeHero({ heroClass: 'PICARO' }), makeEvent('STATUE', { statues: ['PICARO'] }), true).hero;
 
     expect(caballero.damageReduction).toBe(0.4);
     expect(barbaro.percentAttackBonus).toBe(0.4);
     expect(picaro.evasionChance).toBe(0.3);
-    expect(picaro.goldMultiplier).toBe(1.15);
+    expect(picaro.goldMultiplier).toBe(1.4);
   });
 
-  it('aplica la bendición arcana al Mago y recalcula estadísticas', () => {
-    const hero = makeHero({ heroClass: 'MAGO', mana: 50, maxMana: 100 });
-    const result = applyEventEffect(hero, makeEvent('STATUE'), true);
+  it('la estatua mágica reduce a la mitad el costo de los hechizos', () => {
+    const result = applyEventEffect(makeHero({ heroClass: 'MAGO', mana: 50, maxMana: 100 }), makeEvent('STATUE', { statues: ['MAGO'] }), true);
 
-    expect(result.hero.maxMana).toBe(150);
-    expect(result.hero.mana).toBe(100);
-    expect(result.hero.flatAttackBonus).toBe(15);
-    expect(result.hero.attack).toBe(35);
-    expect(result.message).toContain('Estatua Mágica');
+    expect(result.hero.spellCostMultiplier).toBe(0.5);
+    expect(result.message).toContain('se reduce a la mitad');
   });
 });

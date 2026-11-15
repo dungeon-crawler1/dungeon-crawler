@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   startGameRun: vi.fn(),
   syncRunTurn: vi.fn(),
   spawnEnemyForRoom: vi.fn(),
+  spawnEncounterForRoom: vi.fn(),
 }));
 
 vi.mock('vue-router', () => ({ useRouter: () => ({ push: mocks.push }) }));
@@ -19,7 +20,7 @@ vi.mock('../../services/gameService', async (importOriginal) => {
 
 vi.mock('../../../../shared/game/gameContent', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../shared/game/gameContent')>();
-  return { ...actual, spawnEnemyForRoom: mocks.spawnEnemyForRoom };
+  return { ...actual, spawnEnemyForRoom: mocks.spawnEnemyForRoom, spawnEncounterForRoom: mocks.spawnEncounterForRoom };
 });
 
 import GamePage from '../GamePage.vue';
@@ -53,6 +54,7 @@ beforeEach(() => {
   mocks.push.mockReset();
   mocks.syncRunTurn.mockReset().mockResolvedValue(undefined);
   mocks.spawnEnemyForRoom.mockReset().mockReturnValue(makeEnemy());
+  mocks.spawnEncounterForRoom.mockReset().mockReturnValue([makeEnemy()]);
 });
 
 describe('GamePage', () => {
@@ -77,10 +79,12 @@ describe('GamePage', () => {
 
   it('muestra la interfaz de combate y permite atacar', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
-    const { wrapper } = mountPage({ inCombat: true, enemy: makeEnemy({ hp: 500, maxHp: 500 }) });
-    expect(wrapper.text()).toContain('COMBATE: Orco');
-    await wrapper.findComponent(CombatUI).findAll('button')[0].trigger('click');
-    expect(wrapper.text()).toContain('Vida del Enemigo (480 / 500)');
+    const enemy = makeEnemy({ hp: 500, maxHp: 500 });
+    const { wrapper } = mountPage({ inCombat: true, enemy, enemies: [enemy] });
+    expect(wrapper.text()).toContain('COMBATE');
+    expect(wrapper.text()).toContain('Orco');
+    await wrapper.findComponent(CombatUI).findAll('button')[1].trigger('click');
+    expect(wrapper.text()).toContain('480 / 500');
   });
 
   it('muestra el mercader y permite comprar', async () => {

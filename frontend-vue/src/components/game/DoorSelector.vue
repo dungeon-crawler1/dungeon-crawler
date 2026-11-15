@@ -10,6 +10,7 @@
         <div style="font-size: 2em; margin-bottom: 6px;">{{ door.icon }}</div>
         <h4>{{ door.title }}</h4>
         <p style="font-size: 0.85em; min-height: 42px;">{{ door.description }}</p>
+        <p v-if="door.preview" style="font-size: 0.75em; color: #8ce99a; min-height: 32px;">{{ door.preview }}</p>
         <button
           type="button"
           :disabled="disabled"

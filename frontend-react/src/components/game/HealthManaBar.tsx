@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import type { Hero } from '../../types/game';
 import { RelicsDropdown } from './RelicsDropdown';
+import { heroStatuses } from '../../utils/combatLogic';
 
 interface Props {
   hero: Hero;
@@ -28,6 +29,14 @@ export const HealthManaBar: React.FC<Props> = ({ hero, room, score, onForfeit, o
   const totalEvasionPct = Math.round((hero.evasionChance + hero.battleBuffs.evasionBonus) * 100);
   const extraGoldPct = Math.round((hero.goldMultiplier - 1) * 100);
   const discountPct = Math.round(hero.shopDiscount * 100);
+  const statuses = heroStatuses(hero);
+  const statusText = [
+    statuses.stunTurns > 0 ? 'Aturdido' : '',
+    statuses.evasionTurns > 0 ? `Evasión ${statuses.evasionTurns}t` : '',
+    statuses.strengthTurns > 0 ? `Fuerza ${statuses.strengthTurns}t` : '',
+    statuses.burnTurns > 0 ? `Quemadura ${statuses.burnTurns}t` : '',
+    statuses.acidTurns > 0 ? `Ácido ${statuses.acidTurns}t` : '',
+  ].filter(Boolean).join(' | ');
 
   return (
     <div style={{ padding: '15px', background: '#222', color: '#fff', borderRadius: '8px', marginBottom: '20px' }}>
@@ -83,6 +92,7 @@ export const HealthManaBar: React.FC<Props> = ({ hero, room, score, onForfeit, o
         </div>
       )}
 
+      {statusText && <div style={{ fontSize: '0.8em', color: '#ffd166', marginTop: '6px' }}>✨ {statusText}</div>}
       <RelicsDropdown relics={hero.relics} />
     </div>
   );

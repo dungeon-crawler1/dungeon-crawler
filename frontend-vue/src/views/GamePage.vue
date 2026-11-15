@@ -35,10 +35,12 @@
     />
 
     <CombatUI
-      v-if="game.state.inCombat && game.state.enemy"
+      v-if="game.state.inCombat && enemies.length > 0"
       :hero="hero"
-      :enemy="enemy"
+      :enemies="enemies"
+      :target-index="game.state.targetIndex ?? 0"
       :disabled="game.loading"
+      @select-target="game.selectTarget"
       @attack="game.attackEnemy"
       @use-potion="game.usePotion"
       @cast-spell="game.castSpell"
@@ -79,6 +81,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGameStore } from '../stores/gameStore';
 import type { Enemy, Hero } from '../types/game';
+
 import ClassSelector from '../components/game/ClassSelector.vue';
 import HealthManaBar from '../components/game/HealthManaBar.vue';
 import CombatUI from '../components/game/CombatUI.vue';
@@ -92,7 +95,7 @@ import LeaveConfirmModal from '../components/game/LeaveConfirmModal.vue';
 const router = useRouter();
 const game = useGameStore();
 const hero = computed(() => game.state.hero as Hero);
-const enemy = computed(() => game.state.enemy as Enemy);
+const enemies = computed<Enemy[]>(() => game.state.enemies ?? (game.state.enemy ? [game.state.enemy] : []));
 
 function goHome(): void {
   router.push('/dashboard');

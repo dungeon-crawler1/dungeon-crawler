@@ -122,27 +122,31 @@ describe('applyVictoryRewards', () => {
     expect(hero.relics).toHaveLength(0);
   });
 
-  it('registra jefe derrotado y aplica la reliquia de daño base', () => {
+  it('registra jefe derrotado y su reliquia especial', () => {
     const relic = { id: 'boss-emp', name: 'Espada del Emperador', effectSummary: 'x', description: 'x' };
     const enemy = makeEnemy({ name: 'Emperador Caído', isBoss: true, bossRelic: relic });
     const { hero } = applyVictoryRewards(makeHero(), enemy, 0);
 
     expect(hero.relics).toEqual([relic]);
     expect(hero.defeatedBosses).toEqual(['Emperador Caído']);
-    expect(hero.flatAttackBonus).toBe(25);
-    expect(hero.attack).toBe(45);
+    expect(hero.flatAttackBonus).toBe(0);
+    expect(hero.attack).toBe(20);
   });
 
-  it('aplica las reliquias de daño porcentual y vida máxima', () => {
+  it('aplica la reliquia de daño porcentual del jefe', () => {
     const acid = { id: 'boss-acid', name: 'Viseras Ácidas', effectSummary: 'x', description: 'x' };
-    const drac = { id: 'boss-drac', name: 'Vampirismo Completo', effectSummary: 'x', description: 'x' };
     const acidHero = applyVictoryRewards(makeHero(), makeEnemy({ isBoss: true, bossRelic: acid }), 0).hero;
-    const dracHero = applyVictoryRewards(makeHero(), makeEnemy({ isBoss: true, bossRelic: drac }), 0).hero;
 
     expect(acidHero.percentAttackBonus).toBe(0.5);
     expect(acidHero.attack).toBe(30);
-    expect(dracHero.percentMaxHpBonus).toBe(0.25);
-    expect(dracHero.maxHp).toBe(125);
+  });
+
+  it('el vampirismo del jefe no altera la vida máxima', () => {
+    const drac = { id: 'boss-drac', name: 'Vampirismo Completo', effectSummary: 'x', description: 'x' };
+    const dracHero = applyVictoryRewards(makeHero(), makeEnemy({ isBoss: true, bossRelic: drac }), 0).hero;
+
+    expect(dracHero.percentMaxHpBonus).toBe(0);
+    expect(dracHero.maxHp).toBe(100);
   });
 
   it('aplica la reliquia de reducción de daño respetando el tope', () => {
