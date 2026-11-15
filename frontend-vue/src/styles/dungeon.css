@@ -1,0 +1,242 @@
+/* =============================================================================
+   TEMA MEDIEVAL DE MAZMORRA — VUE
+   Fondo de piedra, tipografía de época y componentes de bronce/sangre.
+   ============================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap');
+
+:root {
+  --ink: #0d0b09;
+  --stone-1: #2f2923;
+  --stone-2: #211c17;
+  --stone-3: #171310;
+  --gold: #d8b56a;
+  --gold-soft: #e8cd95;
+  --parchment: #efe3c8;
+  --parchment-dim: #c9b994;
+  --blood: #7a1f1f;
+  --blood-dark: #4a1010;
+  --iron: #6b5636;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app { min-height: 100%; }
+
+body {
+  margin: 0;
+  color: var(--parchment);
+  font-family: 'Cinzel', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  background-color: var(--stone-3);
+  background-image:
+    radial-gradient(ellipse at 18% 14%, rgba(78, 69, 57, .95) 0 8%, transparent 9%),
+    radial-gradient(ellipse at 62% 24%, rgba(66, 58, 48, .9) 0 9%, transparent 10%),
+    radial-gradient(ellipse at 86% 68%, rgba(56, 49, 41, .95) 0 10%, transparent 11%),
+    radial-gradient(ellipse at 34% 82%, rgba(70, 61, 50, .85) 0 9%, transparent 10%),
+    repeating-linear-gradient(35deg, transparent 0 46px, rgba(0, 0, 0, .34) 47px 49px),
+    repeating-linear-gradient(-35deg, transparent 0 54px, rgba(0, 0, 0, .3) 55px 57px),
+    linear-gradient(160deg, #241f1a, #12100d);
+  background-size: 280px 280px, 320px 320px, 300px 300px, 260px 260px, auto, auto, cover;
+  background-attachment: fixed;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 35%, transparent 35%, rgba(0, 0, 0, .55) 100%);
+  z-index: 0;
+}
+
+#app { position: relative; z-index: 1; }
+
+h1, h2, h3, h4 {
+  font-family: 'MedievalSharp', 'Cinzel', serif;
+  color: var(--gold-soft);
+  letter-spacing: .05em;
+  text-shadow: 0 1px 0 #000, 0 0 14px rgba(216, 181, 106, .18);
+}
+
+p, li, label, small, span, td, th { font-family: inherit; }
+
+a { color: var(--gold); text-decoration: none; }
+a:hover { color: #ffe2a0; text-shadow: 0 0 10px rgba(255, 210, 120, .5); }
+
+button {
+  font-family: inherit;
+  letter-spacing: .05em;
+  border-radius: 3px !important;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .65);
+  transition: filter .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+button:not(:disabled) { cursor: pointer; }
+button:not(:disabled):hover { filter: brightness(1.18); transform: translateY(-1px); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+input, textarea, select {
+  font-family: inherit;
+  color: var(--parchment) !important;
+  background: #14110e !important;
+  border: 1px solid var(--iron) !important;
+  border-radius: 3px !important;
+  padding: 10px 12px;
+  outline: none;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 2px rgba(216, 181, 106, .18);
+}
+
+/* ------------------------------ Autenticación ------------------------------ */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 50% 112%, rgba(214, 120, 30, .24), transparent 46%),
+    radial-gradient(circle at 10% 18%, rgba(160, 50, 20, .14), transparent 30%),
+    radial-gradient(circle at 90% 80%, rgba(120, 80, 30, .12), transparent 32%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 34px 32px 28px;
+  border: 2px solid var(--iron);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(32, 27, 22, .97), rgba(12, 10, 8, .99));
+  box-shadow:
+    0 0 0 1px #2a231b,
+    0 24px 60px rgba(0, 0, 0, .85),
+    inset 0 0 50px rgba(0, 0, 0, .65);
+  position: relative;
+}
+
+.auth-card::before {
+  content: '⚔  MAZMORRA  ⚔';
+  display: block;
+  margin-bottom: 18px;
+  text-align: center;
+  font-family: 'MedievalSharp', serif;
+  color: var(--gold);
+  letter-spacing: .22em;
+  font-size: .8rem;
+  text-shadow: 0 0 12px rgba(216, 181, 106, .45);
+}
+
+.auth-card::after {
+  content: '';
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: .5;
+}
+
+.auth-card h2 {
+  margin: 0 0 22px;
+  text-align: center;
+  font-size: 1.55rem;
+  line-height: 1.25;
+}
+
+.auth-card label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--parchment-dim);
+  font-size: .78rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.auth-card input { width: 100%; }
+
+.auth-card form > div { margin-bottom: 16px; }
+
+.auth-card .dungeon-button { width: 100%; margin-top: 8px; }
+
+.auth-card p { margin: 20px 0 0; text-align: center; color: var(--parchment-dim); font-size: .9rem; }
+
+.form-error { color: #ff9b8a !important; }
+.form-success { color: #a8d98a !important; }
+
+/* ------------------------------ Botones / paneles ------------------------- */
+.dungeon-button {
+  padding: 11px 20px;
+  color: #f7e8c3 !important;
+  background: linear-gradient(180deg, #7a2520, #4a1010) !important;
+  border: 1px solid #c49a55 !important;
+  border-radius: 3px !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 220, 150, .12), 0 4px 10px rgba(0, 0, 0, .55) !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+.dungeon-button.primary {
+  background: linear-gradient(180deg, #8a6a2a, #4b3512) !important;
+  color: #fff3d0 !important;
+}
+
+.dungeon-panel {
+  border: 1px solid #5a4a30;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(35, 30, 24, .92), rgba(16, 14, 11, .96));
+  box-shadow: inset 0 0 38px rgba(0, 0, 0, .55), 0 10px 26px rgba(0, 0, 0, .45);
+}
+
+/* ------------------------------ Dashboard -------------------------------- */
+.dungeon-dashboard {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 34px 20px 70px;
+}
+
+.dungeon-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--iron);
+  padding-bottom: 14px;
+  margin-bottom: 22px;
+}
+
+.dungeon-header h1 { margin: 0; font-size: 1.7rem; }
+
+.dungeon-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ------------------------------ Mazmorra --------------------------------- */
+.dungeon-game {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(120, 40, 20, .2), transparent 55%),
+    radial-gradient(ellipse at 50% 110%, rgba(0, 0, 0, .7), transparent 60%),
+    linear-gradient(180deg, #0d0b09, #15110d 55%, #090806);
+}
+
+.dungeon-content { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+
+.dungeon-game h2 { color: #e9c98a; }
+.dungeon-game h3, .dungeon-game h4 { color: #e2bf7d; }
+
+/* ------------------------------ Tablas ----------------------------------- */
+table th {
+  color: var(--gold);
+  font-family: 'MedievalSharp', serif;
+  letter-spacing: .08em;
+  padding-bottom: 8px;
+}
+table td { border-top: 1px solid rgba(216, 181, 106, .18); padding: 8px 6px; }
+table tbody tr:hover { background: rgba(216, 181, 106, .07); }
+
+::selection { background: rgba(216, 181, 106, .3); color: #fff; }
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #100d0a; }
+::-webkit-scrollbar-thumb { background: #4a3c2a; border: 1px solid #6b5636; border-radius: 4px; }

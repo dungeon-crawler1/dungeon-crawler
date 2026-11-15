@@ -25,32 +25,32 @@ describe('App', () => {
   it('renderiza la ruta pública de login', () => {
     renderAt('/login');
 
-    expect(screen.getByText('Roguelike - Iniciar Sesión')).toBeTruthy();
+    expect(screen.getByText('⚔ Entrada a la Mazmorra')).toBeTruthy();
   });
 
   it('renderiza la ruta pública de registro', () => {
     renderAt('/register');
 
-    expect(screen.getByText('Roguelike - Crear Cuenta')).toBeTruthy();
+    expect(screen.getByText('⚔ Forjar un Nuevo Héroe')).toBeTruthy();
   });
 
   it('redirige al login si no hay token en una ruta protegida', () => {
     renderAt('/dashboard');
 
-    expect(screen.getByText('Roguelike - Iniciar Sesión')).toBeTruthy();
+    expect(screen.getByText('⚔ Entrada a la Mazmorra')).toBeTruthy();
   });
 
   it('redirige rutas desconocidas al login cuando no hay sesión', () => {
     renderAt('/ruta-inexistente');
 
-    expect(screen.getByText('Roguelike - Iniciar Sesión')).toBeTruthy();
+    expect(screen.getByText('⚔ Entrada a la Mazmorra')).toBeTruthy();
   });
 
   it('permite acceder al panel cuando existe un token', async () => {
     localStorage.setItem('jwt_token', 'token');
     renderAt('/dashboard');
 
-    expect(await screen.findByText('Panel Principal - Roguelike Game (React)')).toBeTruthy();
+    expect(await screen.findByText('⚔ Panel del Aventurero')).toBeTruthy();
   });
 
   it('permite acceder a la mazmorra cuando existe un token', async () => {

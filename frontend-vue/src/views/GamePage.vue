@@ -1,5 +1,6 @@
 <template>
-  <div v-if="!game.state.hero" style="max-width: 900px; margin: 30px auto; padding: 20px;">
+  <div v-if="!game.state.hero" class="dungeon-game">
+    <div class="dungeon-content">
     <div
       v-if="game.error"
       style="padding: 12px; margin-bottom: 15px; background: #5c1a1a; color: #ffd6d6; border-radius: 6px;"
@@ -7,18 +8,21 @@
       ⚠️ {{ game.error }}
     </div>
     <ClassSelector :disabled="game.loading" @select="game.selectClass" />
+    </div>
   </div>
 
-  <GameSummary
-    v-else-if="game.state.isFinished"
-    :reason="game.state.finishReason"
-    :score="game.state.score"
-    :gold="hero.gold"
-    @restart="game.resetRun"
-    @go-home="goHome"
-  />
+  <div v-else-if="game.state.isFinished" class="dungeon-game">
+    <GameSummary
+      :reason="game.state.finishReason"
+      :score="game.state.score"
+      :gold="hero.gold"
+      @restart="game.resetRun"
+      @go-home="goHome"
+    />
+  </div>
 
-  <div v-else style="max-width: 900px; margin: 30px auto; padding: 20px;">
+  <div v-else class="dungeon-game">
+    <div class="dungeon-content">
     <LeaveConfirmModal
       v-if="game.state.showLeaveConfirm"
       @confirm="goHome"
@@ -70,6 +74,7 @@
     />
 
     <GameLog :logs="game.state.logs" />
+    </div>
   </div>
 </template>
 

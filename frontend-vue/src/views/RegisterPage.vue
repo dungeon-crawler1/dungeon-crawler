@@ -1,43 +1,26 @@
 <template>
-  <div style="max-width: 400px; margin: 50px auto; padding: 25px; border: 1px solid #ccc; border-radius: 8px;">
-    <h2>Roguelike (Vue) - Crear Cuenta</h2>
-    <div v-if="error" style="color: red; margin-bottom: 12px;">{{ error }}</div>
-    <div v-if="success" style="color: green; margin-bottom: 12px;">Registro completado con éxito. Redirigiendo...</div>
-    <form @submit.prevent="handleSubmit">
-      <div style="margin-bottom: 15px;">
-        <label for="vue-reg-email">Correo Electrónico:</label>
-        <input
-          id="vue-reg-email"
-          type="email"
-          v-model="email"
-          required
-          style="width: 100%; padding: 8px; margin-top: 5px;"
-        />
-      </div>
-      <div style="margin-bottom: 15px;">
-        <label for="vue-reg-password">Contraseña:</label>
-        <input
-          id="vue-reg-password"
-          type="password"
-          v-model="password"
-          required
-          style="width: 100%; padding: 8px; margin-top: 5px;"
-        />
-      </div>
-      <button
-        type="submit"
-        :disabled="isSubmitting"
-        style="width: 100%; padding: 10px; background: #28a745; color: #fff; border: none; border-radius: 4px;"
-      >
-        {{ isSubmitting ? 'Creando cuenta...' : 'Registrar' }}
-      </button>
-    </form>
-    <p style="margin-top: 15px;">
-      ¿Ya posees una cuenta? <router-link to="/login">Inicia sesión</router-link>
-    </p>
+  <div class="auth-page">
+    <div class="auth-card">
+      <h2>⚔ Forjar un Nuevo Héroe (Vue)</h2>
+      <div v-if="error" class="form-error" style="margin-bottom: 12px;">{{ error }}</div>
+      <div v-if="success" class="form-success" style="margin-bottom: 12px;">Registro completado con éxito. Redirigiendo...</div>
+      <form @submit.prevent="handleSubmit">
+        <div>
+          <label for="vue-reg-email">Correo Electrónico</label>
+          <input id="vue-reg-email" type="email" class="dungeon-input" v-model="email" required />
+        </div>
+        <div>
+          <label for="vue-reg-password">Contraseña</label>
+          <input id="vue-reg-password" type="password" class="dungeon-input" v-model="password" required />
+        </div>
+        <button type="submit" class="dungeon-button" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Creando cuenta...' : 'Registrar' }}
+        </button>
+      </form>
+      <p>¿Ya posees una cuenta? <router-link to="/login">Inicia sesión</router-link></p>
+    </div>
   </div>
 </template>
-
 <script setup lang="ts">
 // =============================================================================
 // VISTA DE REGISTRO EN VUE 3

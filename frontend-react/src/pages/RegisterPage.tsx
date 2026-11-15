@@ -31,40 +31,26 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '25px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>Roguelike - Crear Cuenta</h2>
-      {error && <div style={{ color: 'red', marginBottom: '12px' }}>{error}</div>}
-      {success && <div style={{ color: 'green', marginBottom: '12px' }}>Registro completado con éxito. Redirigiendo al login...</div>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="reg-email">Correo Electrónico:</label>
-          <input
-            id="reg-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="reg-password">Contraseña:</label>
-          <input
-            id="reg-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-          />
-        </div>
-        <button type="submit" disabled={isSubmitting} style={{ width: '100%', padding: '10px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '4px' }}>
-          {isSubmitting ? 'Creando cuenta...' : 'Registrar'}
-        </button>
-      </form>
-      <p style={{ marginTop: '15px' }}>
-        ¿Ya posees una cuenta? <Link to="/login">Inicia sesión</Link>
-      </p>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h2>⚔ Forjar un Nuevo Héroe</h2>
+        {error && <div className="form-error" style={{ marginBottom: '12px' }}>{error}</div>}
+        {success && <div className="form-success" style={{ marginBottom: '12px' }}>Registro completado con éxito. Redirigiendo al login...</div>}
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="reg-email">Correo Electrónico:</label>
+            <input id="reg-email" type="email" className="dungeon-input" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
+          <div>
+            <label htmlFor="reg-password">Contraseña:</label>
+            <input id="reg-password" type="password" className="dungeon-input" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </div>
+          <button type="submit" className="dungeon-button" disabled={isSubmitting}>
+            {isSubmitting ? 'Creando cuenta...' : 'Registrar'}
+          </button>
+        </form>
+        <p>¿Ya posees una cuenta? <Link to="/login">Inicia sesión</Link></p>
+      </div>
     </div>
-  );
+  )
 };

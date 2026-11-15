@@ -36,7 +36,7 @@ describe('RegisterPage', () => {
   it('renderiza el formulario de registro', () => {
     const wrapper = mountPage();
 
-    expect(wrapper.find('h2').text()).toContain('Crear Cuenta');
+    expect(wrapper.find('h2').text()).toContain('Forjar un Nuevo Héroe');
     expect(wrapper.find('#vue-reg-email').exists()).toBe(true);
     expect(wrapper.find('#vue-reg-password').exists()).toBe(true);
     expect(wrapper.find('button').text()).toBe('Registrar');
