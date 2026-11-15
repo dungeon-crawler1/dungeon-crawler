@@ -158,6 +158,11 @@ describe('applyVictoryRewards', () => {
 });
 
 describe('applyShopPurchase', () => {
+  it('el anillo vampírico otorga un 7 % de robo de vida', () => {
+    const hero = applyShopPurchase(makeHero({ gold: 200 }), makeItem({ id: 'rel-vampire', price: 0, type: 'RELIQUIA' }));
+    expect(hero.lifestealOnKill).toBe(0.07);
+  });
+
   it('agrega una poción nueva al inventario', () => {
     const item = makeItem({ id: 'pot-heal-md', type: 'POCION', effectType: 'HEAL', price: 30 });
     const hero = applyShopPurchase(makeHero({ gold: 100 }), item);

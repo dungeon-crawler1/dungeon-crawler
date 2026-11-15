@@ -133,7 +133,7 @@ const RELIC_EFFECTS: Record<string, (hero: Hero) => Hero> = {
   'rel-sharp': (hero) => (hero.heroClass === 'MAGO' ? hero : recalculateHeroStats({ ...hero, percentAttackBonus: hero.percentAttackBonus + 0.15 })),
   'rel-crystal': (hero) => (hero.heroClass === 'MAGO' ? withManaBonus(hero, 0.3) : hero),
   'lux-merlin': (hero) => withManaBonus(hero, 0.5),
-  'rel-vampire': (hero) => ({ ...hero, lifestealOnKill: (hero.lifestealOnKill ?? 0) + 0.04 }),
+  'rel-vampire': (hero) => ({ ...hero, lifestealOnKill: (hero.lifestealOnKill ?? 0) + 0.07 }),
   'lux-essence': (hero) => ({ ...hero, maxHpPerKill: (hero.maxHpPerKill ?? 0) + 0.05 }),
   'lux-telescope': (hero) => ({ ...hero, previewEnabled: true }),
   'lux-berserker': (hero) => ({ ...hero, firstTurnDamageBonus: (hero.firstTurnDamageBonus ?? 0) + 0.5 }),

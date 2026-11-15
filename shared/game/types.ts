@@ -74,6 +74,7 @@ export interface Hero {
   battleBuffs: BattleBuffs;
   shieldCharges: number;
   statueUsed: boolean;
+  statueBonus?: string;
   relics: EquippedRelic[];
   defeatedBosses: string[];
   // Extensiones de la especificación de juego

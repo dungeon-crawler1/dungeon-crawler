@@ -24,6 +24,15 @@ describe('HealthManaBar', () => {
     expect(wrapper.text()).not.toContain('Modificadores');
   });
 
+  it('muestra la probabilidad de bloqueo y la estatua en el tooltip', async () => {
+    const hero = makeHero({ statueBonus: 'Real: -40 % daño recibido' });
+    const wrapper = mount(HealthManaBar, { props: { hero, room: 1, score: 0, disabled: false } });
+
+    await wrapper.find('span').trigger('mouseenter');
+    expect(wrapper.text()).toContain('Prob. de Bloqueo: 20 %');
+    expect(wrapper.text()).toContain('Estatua: Real: -40 % daño recibido');
+  });
+
   it('emite terminar partida y volver al inicio', async () => {
     const wrapper = mount(HealthManaBar, { props: { hero: makeHero(), room: 1, score: 0, disabled: false } });
     const buttons = wrapper.findAll('button');

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { applyEventEffect, resolveDoorEncounter } from '../../../../shared/game/roomLogic';
+import { applyEventEffect, attachDoorPreviews, buildEvent, resolveDoorEncounter } from '../../../../shared/game/roomLogic';
 import type { Door, GameEvent, RoomEventType } from '../../types/game';
 import { makeHero } from '../../test/fixtures';
 
@@ -159,5 +159,37 @@ describe('applyEventEffect', () => {
 
     expect(result.hero.spellCostMultiplier).toBe(0.5);
     expect(result.message).toContain('se reduce a la mitad');
+  });
+});
+
+
+describe('previews de estatua y sala de ayuda', () => {
+  it('muestra la clase de la estatua antes de entrar', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const doors = attachDoorPreviews([makeDoor('STATUE')], makeHero({ heroClass: 'CABALLERO' }), 1);
+
+    expect(doors[0].preview).toContain('Estatua Real (Caballero)');
+    expect(doors[0].previewData?.event?.statues).toContain('CABALLERO');
+  });
+
+  it('muestra el tipo y la bonificación de la sala de ayuda', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const doors = attachDoorPreviews([makeDoor('HELP_ROOM')], makeHero(), 1);
+
+    expect(doors[0].preview).toContain('Hoguera: +20 HP');
+    expect(doors[0].previewData?.event?.helpType).toBe('HOGUERA');
+  });
+
+  it('no ofrece el estanque a clases sin maná', () => {
+    const random = vi.spyOn(Math, 'random');
+    for (const value of [0, 0.2, 0.5, 0.8, 0.99]) {
+      random.mockReturnValue(value);
+      expect(buildEvent('HELP_ROOM', 'CABALLERO')?.helpType).not.toBe('ESTANQUE');
+    }
+  });
+
+  it('permite el estanque al mago', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    expect(buildEvent('HELP_ROOM', 'MAGO')?.helpType).toBe('ESTANQUE');
   });
 });

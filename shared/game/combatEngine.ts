@@ -160,10 +160,6 @@ function enemySpecial(enemy: Enemy, hero: Hero, logs: string[]): SpecialResult {
     logs.push('🧪 La criatura escupe ácido: 15 % de su ataque por 4 turnos.');
     return { hero: { ...hero, statuses: { ...statuses, acidTurns: 4 }, acidDamage: Math.round(enemy.attack * 0.15) }, enemy, damage: 0, kind: 'ACID' };
   }
-  if (enemy.ability === 'CHARGE') {
-    logs.push('⚡ El robot carga un ataque eléctrico para el próximo turno.');
-    return { hero, enemy: { ...enemy, chargeTurns: 1, specialCooldown: 3 }, damage: 0, kind: 'CHARGE' };
-  }
   if (enemy.ability === 'ROCKS') {
     const hits = randInt(3, 5);
     logs.push(`🪨 El titán golpea el suelo: ${hits} rocas de 50 de daño.`);
@@ -200,6 +196,11 @@ function applyEnemyHit(hero: Hero, rawDamage: number, logs: string[], name: stri
   return { hero: { ...result.hero, hp: nextHp }, dead: nextHp === 0, damage: result.damage };
 }
 
+function applyAcid(hero: Hero, enemy: Enemy, logs: string[]): Hero {
+  logs.push('🧪 La criatura está furiosa: su ataque aplica ácido.');
+  return { ...hero, statuses: { ...heroStatuses(hero), acidTurns: 4 }, acidDamage: Math.round(enemy.attack * 0.15) };
+}
+
 function normalAttack(enemy: Enemy, hero: Hero, logs: string[]): { hero: Hero; enemy: Enemy; heroDead: boolean } {
   let raw = enemy.attack;
   let nextEnemy = enemy;
@@ -218,6 +219,7 @@ function normalAttack(enemy: Enemy, hero: Hero, logs: string[]): { hero: Hero; e
   }
   const result = applyEnemyHit(hero, raw, logs, enemy.name);
   let nextHero = result.hero;
+  if (enemy.ability === 'ACID' && enemy.hp < enemy.maxHp * 0.3) nextHero = applyAcid(nextHero, enemy, logs);
   if (enemy.ability === 'STUN' && Math.random() < (enemy.isBoss ? 0.2 : 0.15)) {
     nextHero = { ...nextHero, statuses: { ...heroStatuses(nextHero), stunTurns: 1 } };
     logs.push('😵 Quedás aturdido y perdés el próximo ataque.');
@@ -227,6 +229,15 @@ function normalAttack(enemy: Enemy, hero: Hero, logs: string[]): { hero: Hero; e
 }
 
 function specialAttack(enemy: Enemy, hero: Hero, logs: string[]): { hero: Hero; enemy: Enemy; heroDead: boolean } {
+  if (enemy.ability === 'CHARGE') {
+    if (enemy.hp < enemy.maxHp * 0.5) {
+      logs.push('⚡ ¡El robot se enfurece y descarga el ataque eléctrico en el mismo turno!');
+      const hit = applyEnemyHit(hero, enemy.attack * 2, logs, enemy.name);
+      return { hero: hit.hero, enemy: { ...enemy, specialCooldown: 3 }, heroDead: hit.dead };
+    }
+    logs.push('⚡ El robot carga un ataque eléctrico para el próximo turno.');
+    return { hero, enemy: { ...enemy, chargeTurns: 1, specialCooldown: 3 }, heroDead: false };
+  }
   const special = enemySpecial(enemy, hero, logs);
   let nextHero = special.hero;
   let enemyAfter = special.enemy;
@@ -242,15 +253,18 @@ function specialAttack(enemy: Enemy, hero: Hero, logs: string[]): { hero: Hero; 
 
 function enemyAction(enemy: Enemy, hero: Hero, specialChance: number, logs: string[]): { hero: Hero; enemy: Enemy; heroDead: boolean } {
   const statuses = enemy.statuses ?? EMPTY_ENEMY_STATUSES;
+  const cooldown = Math.max(0, (enemy.specialCooldown ?? 0) - 1);
+  const current = { ...enemy, specialCooldown: cooldown };
   if (statuses.stunTurns > 0) {
     logs.push(`😵 ${enemy.name} está aturdido y pierde el turno.`);
-    return { hero, enemy: { ...enemy, statuses: { ...statuses, stunTurns: statuses.stunTurns - 1 } }, heroDead: false };
+    return { hero, enemy: { ...current, statuses: { ...statuses, stunTurns: statuses.stunTurns - 1 } }, heroDead: false };
   }
-  if (enemy.chargeTurns === 1) {
-    const result = applyEnemyHit(hero, enemy.attack * 2, logs, enemy.name);
-    return { hero: result.hero, enemy: { ...enemy, chargeTurns: 0, specialCooldown: 3 }, heroDead: result.dead };
+  if (current.chargeTurns === 1) {
+    const result = applyEnemyHit(hero, current.attack * 2, logs, current.name);
+    return { hero: result.hero, enemy: { ...current, chargeTurns: 0, specialCooldown: 3 }, heroDead: result.dead };
   }
-  return Math.random() < specialChance ? specialAttack(enemy, hero, logs) : normalAttack(enemy, hero, logs);
+  if (cooldown > 0) return normalAttack(current, hero, logs);
+  return Math.random() < specialChance ? specialAttack(current, hero, logs) : normalAttack(current, hero, logs);
 }
 
 function endOfTurn(hero: Hero, enemies: Enemy[], logs: string[], heroDead: boolean): BattleResult {

@@ -72,9 +72,11 @@ export const HealthManaBar: React.FC<Props> = ({ hero, room, score, onForfeit, o
             <div>❤️ Vida Base: {hero.baseMaxHp} (+{hero.flatMaxHpBonus} suma) | Bono Vida: +{totalMaxHpPct} %</div>
             <div>⚔️ Daño Base: {hero.baseAttack} (+{hero.flatAttackBonus} suma) | Daño Extra: +{totalDamagePct} %</div>
             <div>🛡️ Reducción de Daño: {totalReductionPct} %</div>
+            <div>🛡️ Prob. de Bloqueo: {hero.heroClass === 'CABALLERO' ? 20 : 0} %</div>
             <div>💨 Prob. Evasión: {totalEvasionPct} %</div>
             <div>🪙 Monedas Extra: +{extraGoldPct} %</div>
             <div>🏷️ Descuento en Mercaderes: -{discountPct} %</div>
+            <div>🗿 Estatua: {hero.statueBonus ?? 'Sin activar'}</div>
           </div>
         )}
 

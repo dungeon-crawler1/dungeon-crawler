@@ -49,12 +49,12 @@ const MEDIUM_GROUPS: Array<{ enemy: Enemy; min: number; max: number }> = [
 const relic = (id: string, name: string, effectSummary: string, description: string) => ({ id, name, effectSummary, description });
 
 const BOSSES: Enemy[] = [
-  { name: 'Dragón Ancestral', hp: 400, maxHp: 400, attack: 140, goldReward: 600, isBoss: true, ability: 'FIRE', damageReduction: 0.3, bossRelic: relic('boss-dragon', 'Capa de Piel de Dragón', '-50 % Daño recibido', 'Disminuye el daño recibido un 50 %.') },
-  { name: 'Emperador Caído', hp: 350, maxHp: 350, attack: 160, goldReward: 700, isBoss: true, ability: 'DOUBLE_ATTACK', evasionChance: 0.35, bossRelic: relic('boss-emp', 'Espada del Emperador', '65 % de golpear 2 veces', 'Al atacar hay un 65 % de probabilidades de golpear 2 veces.') },
-  { name: 'Criatura Mutante Gigante', hp: 450, maxHp: 450, attack: 130, goldReward: 550, isBoss: true, ability: 'ACID', bossRelic: relic('boss-acid', 'Viseras Ácidas', '+50 % Daño total', 'Aumenta el daño infligido un 50 %.') },
-  { name: 'Robot Enorme Descontrolado', hp: 550, maxHp: 550, attack: 100, goldReward: 650, isBoss: true, ability: 'CHARGE', bossRelic: relic('boss-shock', 'Dispositivo de Shock', '40 % de stunear', 'Al golpear hay un 40 % de probabilidades de stunear al rival un turno.') },
-  { name: 'Titán Esquelético', hp: 500, maxHp: 500, attack: 120, goldReward: 800, isBoss: true, ability: 'ROCKS', bossRelic: relic('boss-hammer', 'Mazo de Hueso de Titán', 'Rocas cada 3 turnos', 'Cada 3 turnos permite un ataque extra con rocas de 30 de daño 2-4 veces.') },
-  { name: 'Drácula', hp: 400, maxHp: 400, attack: 130, goldReward: 500, isBoss: true, ability: 'DRAIN', bossRelic: relic('boss-drac', 'Vampirismo Completo', 'Roba vida al eliminar', 'Al eliminar un enemigo suma su vida restante (100 % en el turno 1, 50 % en el 2, 25 % en el 3…).') },
+  { name: 'Dragón Ancestral', hp: 400, maxHp: 400, attack: 119, goldReward: 600, isBoss: true, ability: 'FIRE', damageReduction: 0.3, bossRelic: relic('boss-dragon', 'Capa de Piel de Dragón', '-50 % Daño recibido', 'Disminuye el daño recibido un 50 %.') },
+  { name: 'Emperador Caído', hp: 350, maxHp: 350, attack: 136, goldReward: 700, isBoss: true, ability: 'DOUBLE_ATTACK', evasionChance: 0.35, bossRelic: relic('boss-emp', 'Espada del Emperador', '65 % de golpear 2 veces', 'Al atacar hay un 65 % de probabilidades de golpear 2 veces.') },
+  { name: 'Criatura Mutante Gigante', hp: 450, maxHp: 450, attack: 111, goldReward: 550, isBoss: true, ability: 'ACID', bossRelic: relic('boss-acid', 'Viseras Ácidas', '+50 % Daño total', 'Aumenta el daño infligido un 50 %.') },
+  { name: 'Robot Enorme Descontrolado', hp: 550, maxHp: 550, attack: 85, goldReward: 650, isBoss: true, ability: 'CHARGE', bossRelic: relic('boss-shock', 'Dispositivo de Shock', '40 % de stunear', 'Al golpear hay un 40 % de probabilidades de stunear al rival un turno.') },
+  { name: 'Titán Esquelético', hp: 500, maxHp: 500, attack: 102, goldReward: 800, isBoss: true, ability: 'ROCKS', bossRelic: relic('boss-hammer', 'Mazo de Hueso de Titán', 'Rocas cada 3 turnos', 'Cada 3 turnos permite un ataque extra con rocas de 30 de daño 2-4 veces.') },
+  { name: 'Drácula', hp: 400, maxHp: 400, attack: 111, goldReward: 500, isBoss: true, ability: 'DRAIN', bossRelic: relic('boss-drac', 'Vampirismo Completo', 'Roba vida al eliminar', 'Al eliminar un enemigo suma su vida restante (100 % en el turno 1, 50 % en el 2, 25 % en el 3…).') },
 ];
 
 function randInt(min: number, max: number): number {
@@ -84,25 +84,30 @@ function scale(enemy: Enemy, multiplier: number): Enemy {
 
 export function spawnEncounterForRoom(type: 'COMBAT' | 'ELITE' | 'BOSS', defeatedBosses: string[], score = 0): Enemy[] {
   const multiplier = enemyStatsMultiplier(defeatedBosses, score);
+  const goldFactor = type === 'COMBAT' ? 1.35 : type === 'ELITE' ? 1.2 : 1;
+  const prepare = (enemy: Enemy): Enemy => {
+    const scaled = scale(enemy, multiplier);
+    return { ...scaled, goldReward: Math.round(scaled.goldReward * goldFactor) };
+  };
   if (type === 'BOSS') {
     const available = BOSSES.filter((boss) => !defeatedBosses.includes(boss.name));
-    return withIds([scale({ ...pick(available.length > 0 ? available : BOSSES) }, multiplier)]);
+    return withIds([prepare({ ...pick(available.length > 0 ? available : BOSSES) })]);
   }
   if (type === 'ELITE') {
     if (Math.random() < 0.5) {
       const group = pick(MEDIUM_GROUPS);
       const count = randInt(group.min, group.max);
-      return withIds(Array.from({ length: count }, () => scale({ ...group.enemy }, multiplier)));
+      return withIds(Array.from({ length: count }, () => prepare({ ...group.enemy })));
     }
-    return withIds([scale({ ...pick(HIGH_ENEMIES) }, multiplier)]);
+    return withIds([prepare({ ...pick(HIGH_ENEMIES) })]);
   }
   if (Math.random() < 0.5) {
-    return withIds([scale({ ...pick(MEDIUM_ENEMIES) }, multiplier)]);
+    return withIds([prepare({ ...pick(MEDIUM_ENEMIES) })]);
   }
   const group = pick(LOW_GROUPS);
   const count = randInt(group.min, group.max);
   const base: Enemy = { name: group.name, hp: group.hp, maxHp: group.hp, attack: group.attack, goldReward: group.gold };
-  return withIds(Array.from({ length: count }, () => scale({ ...base }, multiplier)));
+  return withIds(Array.from({ length: count }, () => prepare({ ...base })));
 }
 
 // Compatibilidad con la UI existente: devuelve el primer enemigo del encuentro
