@@ -39,6 +39,16 @@ test('playTurn actualiza vida y puntuacion', async (t) => {
   assert.strictEqual(captured[0], 1);
 });
 
+test('playTurn persiste el estado y las estadísticas del cliente', async (t) => {
+  t.after(restore);
+  let captured = null;
+  gameRepository.updateRun = async (...args) => { captured = args; return { id: 1 }; };
+  const accion = JSON.stringify({ vida: 42, monedas: 9, puntuacion: 4, resultado: 'DERROTA', estado_run: { historial_habitaciones: [{ habitacion: 1 }] } });
+  await gameEngineService.playTurn(3, 7, accion);
+  assert.deepStrictEqual(captured.slice(0, 5), [3, 42, 9, 4, 'DERROTA']);
+  assert.deepStrictEqual(captured[5], { historial_habitaciones: [{ habitacion: 1 }] });
+});
+
 test('getLeaderboard delega en el repositorio', async (t) => {
   t.after(restore);
   gameRepository.getTop10Global = async () => [{ id: 1 }];

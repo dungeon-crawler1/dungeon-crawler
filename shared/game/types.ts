@@ -159,6 +159,27 @@ export interface GameEvent {
   cost?: number;
 }
 
+export interface RoomHistoryEntry {
+  habitacion: number;
+  evento: string;
+  resultado: string;
+  detalle: string;
+}
+
+export interface RunStats {
+  habitaciones_superadas: number;
+  historial_habitaciones: RoomHistoryEntry[];
+  enemigos_derrotados: number;
+  jefes_derrotados: string[];
+  reliquias: string[];
+  dano_infligido: number;
+  dano_recibido: number;
+  monedas_obtenidas: number;
+  monedas_gastadas: number;
+  monedas_finales: number;
+  objetos_usados: string[];
+}
+
 export interface GameState {
   runId: number | null;
   hero: Hero | null;
@@ -176,6 +197,7 @@ export interface GameState {
   isFinished: boolean;
   finishReason: 'VICTORIA_RETIRO' | 'DERROTA' | null;
   showLeaveConfirm: boolean;
+  stats?: RunStats;
 }
 
 export interface ApiResponse<T> {

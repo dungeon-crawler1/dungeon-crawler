@@ -6,6 +6,8 @@ import { useAuthStore } from '../../stores/authStore';
 
 const mocks = vi.hoisted(() => ({ push: vi.fn() }));
 
+vi.mock('../../components/leaderboard/LeaderboardSection.vue', () => ({ default: { template: '<div>Leaderboard stub</div>' } }));
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: mocks.push }),
   useRoute: () => ({ params: {} }),
