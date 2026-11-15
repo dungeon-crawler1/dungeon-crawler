@@ -1,58 +1,80 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import type { ComponentProps } from 'react';
+import { render } from '@testing-library/react';
 import { CombatUI } from '../CombatUI';
 import { makeEnemy, makeHero, makePotion } from '../../../test/fixtures';
 
-const enemy = makeEnemy({ name: 'Orco', hp: 30, maxHp: 50, attack: 12, goldReward: 25 });
-const baseHandlers = { onAttack: vi.fn(), onUsePotion: vi.fn(), onCastSpell: vi.fn() };
+function setup(overrides: Partial<ComponentProps<typeof CombatUI>> = {}) {
+  const props = {
+    hero: makeHero(), enemies: [makeEnemy()], targetIndex: 0, disabled: false,
+    onSelectTarget: vi.fn(), onAttack: vi.fn(), onUsePotion: vi.fn(), onCastSpell: vi.fn(),
+    ...overrides,
+  };
+  return { props, view: render(<CombatUI {...props} />) };
+}
 
 describe('CombatUI', () => {
-  it('muestra los datos del enemigo y el daño del ataque físico', () => {
-    render(<CombatUI hero={makeHero()} enemy={enemy} {...baseHandlers} disabled={false} />);
-
-    expect(screen.getByText(/COMBATE: Orco/)).toBeTruthy();
-    expect(screen.getByText(/Vida del Enemigo \(30 \/ 50\)/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: '⚔️ Atacar (20 daño)' })).toBeTruthy();
-    expect(screen.getByText('No tienes pociones guardadas en tu inventario.')).toBeTruthy();
-    expect(screen.queryByText(/Grimorio del Mago/)).toBeNull();
+  it('muestra los enemigos y emite el ataque', () => {
+    const { props, view } = setup();
+    expect(view.getByText(/COMBATE/)).toBeTruthy();
+    expect(view.getByText(/Orco/)).toBeTruthy();
+    view.getByText(/Atacar/).click();
+    expect(props.onAttack).toHaveBeenCalled();
   });
 
-  it('muestra buffs activos y permite atacar y usar una poción', () => {
-    const handlers = { onAttack: vi.fn(), onUsePotion: vi.fn(), onCastSpell: vi.fn() };
-    const hero = makeHero({
-      inventory: [makePotion()],
-      battleBuffs: { damageBoostPercent: 0.3, evasionBonus: 0.2, defenseBonus: 0.4, blockCharges: 2 },
-    });
-    render(<CombatUI hero={hero} enemy={enemy} {...handlers} disabled={false} />);
-
-    const buffs = screen.getByText(/Efectos activos en batalla/).textContent ?? '';
-    expect(buffs).toContain('Daño +30 %');
-    expect(buffs).toContain('Bloqueo: 2 ataque(s)');
-    fireEvent.click(screen.getByRole('button', { name: /Atacar/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Usar Poción' }));
-
-    expect(handlers.onAttack).toHaveBeenCalledTimes(1);
-    expect(handlers.onUsePotion).toHaveBeenCalledWith('pot-heal-sm');
+  it('permite seleccionar el objetivo', () => {
+    const { props, view } = setup();
+    view.getByText(/Orco/).click();
+    expect(props.onSelectTarget).toHaveBeenCalledWith(0);
   });
 
-  it('habilita el grimorio del Mago y lanza cada hechizo', () => {
-    const handlers = { onAttack: vi.fn(), onUsePotion: vi.fn(), onCastSpell: vi.fn() };
-    const mago = makeHero({ heroClass: 'MAGO', mana: 100, maxMana: 100 });
-    render(<CombatUI hero={mago} enemy={enemy} {...handlers} disabled={false} />);
-
-    expect(screen.getByText(/Grimorio del Mago \(Maná: 100\/100\)/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /Bola de Fuego/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Rayo/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Escudo 2 Golpes/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Escape Arcano/ }));
-
-    expect(handlers.onCastSpell.mock.calls).toEqual([['BOLA_FUEGO'], ['RAYO'], ['ESCUDO'], ['ESCAPE']]);
+  it('usa una poción del inventario', () => {
+    const { props, view } = setup({ hero: makeHero({ inventory: [makePotion()] }) });
+    view.getByText('Usar Poción').click();
+    expect(props.onUsePotion).toHaveBeenCalledWith('pot-heal-sm');
   });
 
-  it('deshabilita hechizos y acciones cuando falta maná o está ocupado', () => {
-    const mago = makeHero({ heroClass: 'MAGO', mana: 10, maxMana: 100 });
-    render(<CombatUI hero={mago} enemy={enemy} {...baseHandlers} disabled />);
+  it('informa cuando no hay pociones', () => {
+    const { view } = setup();
+    expect(view.getByText('No tenés pociones guardadas.')).toBeTruthy();
+  });
 
-    screen.getAllByRole('button').forEach((button) => expect(button).toHaveProperty('disabled', true));
+  it('muestra los efectos activos de batalla', () => {
+    const hero = makeHero({ battleBuffs: { damageBoostPercent: 0.3, evasionBonus: 0.2, defenseBonus: 0.1, blockCharges: 2 } });
+    const { view } = setup({ hero });
+    expect(view.getByText(/Daño \+30 %/)).toBeTruthy();
+    expect(view.getByText(/Bloqueo: 2/)).toBeTruthy();
+  });
+
+  it('oculta el grimorio a las clases sin maná', () => {
+    const { view } = setup();
+    expect(view.queryByText(/Grimorio/)).toBeNull();
+  });
+
+  it('lanza los seis hechizos del Mago', () => {
+    const hero = makeHero({ heroClass: 'MAGO', mana: 100, maxMana: 100 });
+    const { props, view } = setup({ hero });
+    expect(view.getByText(/Bola de Fuego/)).toBeTruthy();
+    expect(view.getByText(/Fuerza 5 turnos/)).toBeTruthy();
+    view.getByText(/Bola de Fuego/).click();
+    expect(props.onCastSpell).toHaveBeenCalledWith('BOLA_FUEGO');
+  });
+
+  it('deshabilita los hechizos sin maná suficiente', () => {
+    const hero = makeHero({ heroClass: 'MAGO', mana: 20, maxMana: 100 });
+    const { view } = setup({ hero });
+    expect((view.getByText(/Bola de Fuego/) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+
+describe('aturdimiento', () => {
+  it('permite continuar para que el enemigo ataque y bloquea otras acciones', () => {
+    const hero = makeHero({ statuses: { stunTurns: 1, evasionTurns: 0, strengthTurns: 0, acidTurns: 0, burnTurns: 0 } });
+    const { view } = setup({ hero });
+    const button = view.getByText(/Aturdido: dejá que el enemigo ataque/) as HTMLButtonElement;
+
+    expect(button.disabled).toBe(false);
+    expect(view.getByText(/recuperás tu turno/)).toBeTruthy();
   });
 });

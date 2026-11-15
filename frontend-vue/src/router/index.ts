@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import LoginPage from '../views/LoginPage.vue';
 import RegisterPage from '../views/RegisterPage.vue';
 import DashboardPage from '../views/DashboardPage.vue';
+import GamePage from '../views/GamePage.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -19,6 +20,12 @@ const routes: Array<RouteRecordRaw> = [
     path: '/dashboard',
     name: 'Dashboard',
     component: DashboardPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/game',
+    name: 'Game',
+    component: GamePage,
     meta: { requiresAuth: true },
   },
   {

@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import type { Hero } from '../../types/game';
 import { RelicsDropdown } from './RelicsDropdown';
+import { heroStatuses, totalBlockChance, totalDamagePercent, totalEvasion, totalReduction } from '../../utils/combatLogic';
 
 interface Props {
   hero: Hero;
@@ -22,12 +23,21 @@ export const HealthManaBar: React.FC<Props> = ({ hero, room, score, onForfeit, o
   const totalPotions = hero.inventory.reduce((sum, p) => sum + p.quantity, 0);
 
   // Cálculo de porcentajes activos para el tooltip (...)
-  const totalDamagePct = Math.round((hero.percentAttackBonus + hero.battleBuffs.damageBoostPercent) * 100);
+  const totalDamagePct = Math.round(totalDamagePercent(hero) * 100);
   const totalMaxHpPct = Math.round(hero.percentMaxHpBonus * 100);
-  const totalReductionPct = Math.round(Math.min(0.85, hero.damageReduction + hero.battleBuffs.defenseBonus) * 100);
-  const totalEvasionPct = Math.round((hero.evasionChance + hero.battleBuffs.evasionBonus) * 100);
+  const totalReductionPct = Math.round(totalReduction(hero) * 100);
+  const totalEvasionPct = Math.round(totalEvasion(hero) * 100);
+  const blockPct = Math.round(totalBlockChance(hero) * 100);
   const extraGoldPct = Math.round((hero.goldMultiplier - 1) * 100);
   const discountPct = Math.round(hero.shopDiscount * 100);
+  const statuses = heroStatuses(hero);
+  const statusText = [
+    statuses.stunTurns > 0 ? 'Aturdido' : '',
+    statuses.evasionTurns > 0 ? `Evasión ${statuses.evasionTurns}t` : '',
+    statuses.strengthTurns > 0 ? `Fuerza ${statuses.strengthTurns}t` : '',
+    statuses.burnTurns > 0 ? `Quemadura ${statuses.burnTurns}t` : '',
+    statuses.acidTurns > 0 ? `Ácido ${statuses.acidTurns}t` : '',
+  ].filter(Boolean).join(' | ');
 
   return (
     <div style={{ padding: '15px', background: '#222', color: '#fff', borderRadius: '8px', marginBottom: '20px' }}>
@@ -63,9 +73,20 @@ export const HealthManaBar: React.FC<Props> = ({ hero, room, score, onForfeit, o
             <div>❤️ Vida Base: {hero.baseMaxHp} (+{hero.flatMaxHpBonus} suma) | Bono Vida: +{totalMaxHpPct} %</div>
             <div>⚔️ Daño Base: {hero.baseAttack} (+{hero.flatAttackBonus} suma) | Daño Extra: +{totalDamagePct} %</div>
             <div>🛡️ Reducción de Daño: {totalReductionPct} %</div>
+            <div>🛡️ Prob. de Bloqueo: {blockPct} %</div>
             <div>💨 Prob. Evasión: {totalEvasionPct} %</div>
             <div>🪙 Monedas Extra: +{extraGoldPct} %</div>
             <div>🏷️ Descuento en Mercaderes: -{discountPct} %</div>
+            <div>🗿 Estatua: {hero.statueBonus ?? 'Sin activar'}</div>
+            {(hero.lifestealOnKill ?? 0) > 0 && (
+              <div>🩸 Regeneración al eliminar: {Math.round((hero.lifestealOnKill ?? 0) * 100)} % de vida máxima</div>
+            )}
+            {hero.relics.some((relic) => relic.id === 'boss-drac') && (
+              <div>🩸 Vampirismo Completo: cura vida al eliminar (100 %, 50 %, 25 %…)</div>
+            )}
+            {(hero.maxHpPerKill ?? 0) > 0 && (
+              <div>🌱 Vida máxima: +{Math.round((hero.maxHpPerKill ?? 0) * 100)} % por enemigo derrotado</div>
+            )}
           </div>
         )}
 
@@ -83,6 +104,7 @@ export const HealthManaBar: React.FC<Props> = ({ hero, room, score, onForfeit, o
         </div>
       )}
 
+      {statusText && <div style={{ fontSize: '0.8em', color: '#ffd166', marginTop: '6px' }}>✨ {statusText}</div>}
       <RelicsDropdown relics={hero.relics} />
     </div>
   );

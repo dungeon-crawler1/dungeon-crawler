@@ -19,7 +19,7 @@ export const GamePage: React.FC = () => {
   const {
     state, loading, error, selectClass, chooseDoor, attackEnemy, usePotion,
     castSpell, buyItem, closeMerchant, resolveEvent, forfeitRun, resetRun,
-    openLeaveConfirm, closeLeaveConfirm,
+    openLeaveConfirm, closeLeaveConfirm, selectTarget,
   } = useGameEngine();
 
   if (!state.hero) {
@@ -59,7 +59,16 @@ export const GamePage: React.FC = () => {
       />
 
       {state.inCombat && state.enemy && (
-        <CombatUI hero={state.hero} enemy={state.enemy} onAttack={attackEnemy} onUsePotion={usePotion} onCastSpell={castSpell} disabled={loading} />
+        <CombatUI
+          hero={state.hero}
+          enemies={state.enemies ?? (state.enemy ? [state.enemy] : [])}
+          targetIndex={state.targetIndex ?? 0}
+          onSelectTarget={selectTarget}
+          onAttack={attackEnemy}
+          onUsePotion={usePotion}
+          onCastSpell={castSpell}
+          disabled={loading}
+        />
       )}
 
       {!state.inCombat && state.merchantItems.length > 0 && (

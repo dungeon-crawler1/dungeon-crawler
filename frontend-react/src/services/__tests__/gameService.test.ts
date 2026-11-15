@@ -38,9 +38,9 @@ describe('generateProceduralDoors', () => {
     expect(types).toContain('LUXURY_MERCHANT');
   });
 
-  it('no incluye puertas avanzadas en salas tempranas', () => {
+  it('no incluye puertas avanzadas antes de 10 salas', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
-    const types = generateProceduralDoors(10, []).map((d) => d.type);
+    const types = generateProceduralDoors(9, []).map((d) => d.type);
 
     expect(types).not.toContain('ELITE');
     expect(types).not.toContain('LUXURY_MERCHANT');
@@ -56,7 +56,7 @@ describe('generateProceduralDoors', () => {
 
   it('no crea puerta de jefe cuando todos los jefes fueron derrotados', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
-    const defeated = ['Dragón Ancestral', 'Emperador Caído', 'Criatura Mutante Gigante', 'Drácula'];
+    const defeated = ['Dragón Ancestral', 'Emperador Caído', 'Criatura Mutante Gigante', 'Robot Enorme Descontrolado', 'Titán Esquelético', 'Drácula'];
     const doors = generateProceduralDoors(20, defeated);
 
     expect(doors.some((d) => d.type === 'BOSS')).toBe(false);
@@ -71,14 +71,14 @@ describe('spawnEnemyForRoom', () => {
     const boss = spawnEnemyForRoom('BOSS', []);
 
     expect(normal.name).toBe('Orco');
-    expect(elite.name).toBe('Armadura Maldita');
+    expect(elite.name).toBe('Orco');
     expect(boss.name).toBe('Dragón Ancestral');
     expect(boss.bossRelic).toBeDefined();
   });
 
   it('reutiliza el catálogo de jefes si todos fueron derrotados', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
-    const defeated = ['Dragón Ancestral', 'Emperador Caído', 'Criatura Mutante Gigante', 'Drácula'];
+    const defeated = ['Dragón Ancestral', 'Emperador Caído', 'Criatura Mutante Gigante', 'Robot Enorme Descontrolado', 'Titán Esquelético', 'Drácula'];
     const boss = spawnEnemyForRoom('BOSS', defeated);
 
     expect(boss.name).toBe('Dragón Ancestral');

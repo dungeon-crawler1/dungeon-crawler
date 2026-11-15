@@ -40,6 +40,14 @@ describe('DashboardPage', () => {
     expect(wrapper.text()).toContain('sara@test.com');
   });
 
+  it('navega al juego al pulsar Entrar a la Mazmorra', async () => {
+    const wrapper = mountPage();
+
+    await wrapper.find('.enter-game').trigger('click');
+
+    expect(mocks.push).toHaveBeenCalledWith('/game');
+  });
+
   it('cierra la sesión y navega al login al pulsar el botón', async () => {
     const pinia = createPinia();
     setActivePinia(pinia);

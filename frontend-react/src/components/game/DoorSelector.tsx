@@ -20,6 +20,7 @@ export const DoorSelector: React.FC<Props> = ({ doors, onChoose, disabled }) => 
             <div style={{ fontSize: '2em', marginBottom: '6px' }}>{door.icon}</div>
             <h4>{door.title}</h4>
             <p style={{ fontSize: '0.85em', minHeight: '42px' }}>{door.description}</p>
+            {door.preview && <p style={{ fontSize: '0.75em', color: '#8ce99a', minHeight: '32px' }}>{door.preview}</p>}
             <button
               onClick={() => onChoose(door)}
               disabled={disabled}

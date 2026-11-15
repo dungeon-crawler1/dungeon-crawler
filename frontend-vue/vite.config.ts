@@ -10,6 +10,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/*.test.ts'],
+    setupFiles: ['./src/test/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'lcov'],
@@ -19,6 +20,8 @@ export default defineConfig({
         '**/*.spec.*',
         'src/vite-end.d.ts',
         'src/main.ts',
+        'src/test/**',
+        'src/types/**',
       ],
     },
   },

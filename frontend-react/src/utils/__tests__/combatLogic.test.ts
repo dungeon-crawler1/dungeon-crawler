@@ -102,12 +102,12 @@ describe('calculateEnemyCounterAttack', () => {
     expect(result.note).toBe('');
   });
 
-  it('limita la reducción al 85 % y garantiza al menos 1 de daño', () => {
+  it('limita la reducción al 80 % y garantiza al menos 1 de daño', () => {
     const hero = makeHero({ heroClass: 'MAGO', damageReduction: 0.9 });
     const result = calculateEnemyCounterAttack(hero, makeEnemy({ attack: 100 }));
     const minimum = calculateEnemyCounterAttack(hero, makeEnemy({ attack: 1 }));
 
-    expect(result.damageTaken).toBe(15);
+    expect(result.damageTaken).toBe(20);
     expect(minimum.damageTaken).toBe(1);
   });
 });
@@ -122,38 +122,47 @@ describe('applyVictoryRewards', () => {
     expect(hero.relics).toHaveLength(0);
   });
 
-  it('registra jefe derrotado y aplica la reliquia de daño base', () => {
+  it('registra jefe derrotado y su reliquia especial', () => {
     const relic = { id: 'boss-emp', name: 'Espada del Emperador', effectSummary: 'x', description: 'x' };
     const enemy = makeEnemy({ name: 'Emperador Caído', isBoss: true, bossRelic: relic });
     const { hero } = applyVictoryRewards(makeHero(), enemy, 0);
 
     expect(hero.relics).toEqual([relic]);
     expect(hero.defeatedBosses).toEqual(['Emperador Caído']);
-    expect(hero.flatAttackBonus).toBe(25);
-    expect(hero.attack).toBe(45);
+    expect(hero.flatAttackBonus).toBe(0);
+    expect(hero.attack).toBe(20);
   });
 
-  it('aplica las reliquias de daño porcentual y vida máxima', () => {
+  it('aplica la reliquia de daño porcentual del jefe', () => {
     const acid = { id: 'boss-acid', name: 'Viseras Ácidas', effectSummary: 'x', description: 'x' };
-    const drac = { id: 'boss-drac', name: 'Vampirismo Completo', effectSummary: 'x', description: 'x' };
     const acidHero = applyVictoryRewards(makeHero(), makeEnemy({ isBoss: true, bossRelic: acid }), 0).hero;
-    const dracHero = applyVictoryRewards(makeHero(), makeEnemy({ isBoss: true, bossRelic: drac }), 0).hero;
 
     expect(acidHero.percentAttackBonus).toBe(0.5);
     expect(acidHero.attack).toBe(30);
-    expect(dracHero.percentMaxHpBonus).toBe(0.25);
-    expect(dracHero.maxHp).toBe(125);
+  });
+
+  it('el vampirismo del jefe no altera la vida máxima', () => {
+    const drac = { id: 'boss-drac', name: 'Vampirismo Completo', effectSummary: 'x', description: 'x' };
+    const dracHero = applyVictoryRewards(makeHero(), makeEnemy({ isBoss: true, bossRelic: drac }), 0).hero;
+
+    expect(dracHero.percentMaxHpBonus).toBe(0);
+    expect(dracHero.maxHp).toBe(100);
   });
 
   it('aplica la reliquia de reducción de daño respetando el tope', () => {
     const dragon = { id: 'boss-dragon', name: 'Capa de Piel de Dragón', effectSummary: 'x', description: 'x' };
     const { hero } = applyVictoryRewards(makeHero({ damageReduction: 0.4 }), makeEnemy({ isBoss: true, bossRelic: dragon }), 0);
 
-    expect(hero.damageReduction).toBe(0.75);
+    expect(hero.damageReduction).toBe(0.8);
   });
 });
 
 describe('applyShopPurchase', () => {
+  it('el anillo vampírico otorga un 7 % de robo de vida', () => {
+    const hero = applyShopPurchase(makeHero({ gold: 200 }), makeItem({ id: 'rel-vampire', price: 0, type: 'RELIQUIA' }));
+    expect(hero.lifestealOnKill).toBe(0.07);
+  });
+
   it('agrega una poción nueva al inventario', () => {
     const item = makeItem({ id: 'pot-heal-md', type: 'POCION', effectType: 'HEAL', price: 30 });
     const hero = applyShopPurchase(makeHero({ gold: 100 }), item);
@@ -187,7 +196,7 @@ describe('applyShopPurchase', () => {
     const item = makeItem({ reductionBonus: 0.5, discountBonus: 0.6 });
     const hero = applyShopPurchase(makeHero({ damageReduction: 0.5, shopDiscount: 0.5 }), item);
 
-    expect(hero.damageReduction).toBe(0.75);
+    expect(hero.damageReduction).toBe(0.8);
     expect(hero.shopDiscount).toBe(0.6);
   });
 });
@@ -210,17 +219,17 @@ describe('consumeInventoryPotion', () => {
     expect(result.message).toContain('Usaste [Frasco de Curación]');
   });
 
-  it('aplica el buff de daño conservando el mayor porcentaje', () => {
+  it('suma el buff de daño de las pociones', () => {
     const potion = makePotion({ id: 'pot-str', effectType: 'DAMAGE_BOOST', value: 0.3 });
     const hero = makeHero({
       inventory: [potion],
       battleBuffs: { ...makeHero().battleBuffs, damageBoostPercent: 0.5 },
     });
 
-    expect(consumeInventoryPotion(hero, 'pot-str').hero.battleBuffs.damageBoostPercent).toBe(0.5);
+    expect(consumeInventoryPotion(hero, 'pot-str').hero.battleBuffs.damageBoostPercent).toBeCloseTo(0.8);
   });
 
-  it('acumula evasión y defensa con tope del 75 %', () => {
+  it('acumula evasión y defensa con tope del 80 %', () => {
     const evasion = makePotion({ id: 'pot-eva', effectType: 'EVASION_BOOST', value: 0.3 });
     const defense = makePotion({ id: 'pot-def', effectType: 'DEFENSE_BOOST', value: 0.4 });
     const hero = makeHero({
@@ -230,8 +239,8 @@ describe('consumeInventoryPotion', () => {
     const afterEvasion = consumeInventoryPotion(hero, 'pot-eva').hero;
     const afterDefense = consumeInventoryPotion(afterEvasion, 'pot-def').hero;
 
-    expect(afterEvasion.battleBuffs.evasionBonus).toBe(0.75);
-    expect(afterDefense.battleBuffs.defenseBonus).toBe(0.75);
+    expect(afterEvasion.battleBuffs.evasionBonus).toBe(0.8);
+    expect(afterDefense.battleBuffs.defenseBonus).toBe(0.8);
   });
 
   it('suma cargas de bloqueo de ataques', () => {
@@ -239,5 +248,36 @@ describe('consumeInventoryPotion', () => {
     const result = consumeInventoryPotion(makeHero({ inventory: [potion] }), 'pot-blk');
 
     expect(result.hero.battleBuffs.blockCharges).toBe(2);
+  });
+});
+
+
+describe('bonos aditivos y topes', () => {
+  it('suma los bonos de maná de la bola de cristal y la capa de Merlin', () => {
+    let hero = makeHero({ heroClass: 'MAGO', maxMana: 100, mana: 100, baseMaxMana: 100 });
+    hero = applyShopPurchase(hero, makeItem({ id: 'rel-crystal', type: 'RELIQUIA', price: 0 }));
+    hero = applyShopPurchase(hero, makeItem({ id: 'lux-merlin', type: 'RELIQUIA', price: 0 }));
+
+    expect(hero.maxMana).toBe(180);
+  });
+
+  it('suma las pociones de daño entre sí', () => {
+    const hero = makeHero({ inventory: [makePotion({ id: 'pot-str', effectType: 'DAMAGE_BOOST', value: 0.3 }), makePotion({ id: 'lux-str', effectType: 'DAMAGE_BOOST', value: 0.5 })] });
+    const first = consumeInventoryPotion(hero, 'pot-str');
+    const second = consumeInventoryPotion(first.hero, 'lux-str');
+
+    expect(second.hero.battleBuffs.damageBoostPercent).toBeCloseTo(0.8);
+  });
+
+  it('limita evasión y defensa al 80 %', () => {
+    const hero = makeHero({
+      battleBuffs: { damageBoostPercent: 0, evasionBonus: 0.7, defenseBonus: 0.7, blockCharges: 0 },
+      inventory: [makePotion({ id: 'eva', effectType: 'EVASION_BOOST', value: 0.3 }), makePotion({ id: 'def', effectType: 'DEFENSE_BOOST', value: 0.3 })],
+    });
+    const evaded = consumeInventoryPotion(hero, 'eva').hero;
+    const defended = consumeInventoryPotion(evaded, 'def').hero;
+
+    expect(evaded.battleBuffs.evasionBonus).toBeCloseTo(0.8);
+    expect(defended.battleBuffs.defenseBonus).toBeCloseTo(0.8);
   });
 });

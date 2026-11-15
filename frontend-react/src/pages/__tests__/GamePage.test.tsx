@@ -40,6 +40,7 @@ const handlers = {
   resetRun: vi.fn(),
   openLeaveConfirm: vi.fn(),
   closeLeaveConfirm: vi.fn(),
+  selectTarget: vi.fn(),
 };
 
 function mockEngine(state: Partial<GameState>, error: string | null = null) {
