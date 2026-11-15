@@ -58,9 +58,14 @@ export const CombatUI: React.FC<Props> = ({ hero, enemies, targetIndex, disabled
         </div>
       )}
 
-      <button onClick={onAttack} disabled={disabled || statuses.stunTurns > 0} style={btnStyle('#dc3545')}>
-        ⚔️ Atacar ({calculateHeroPhysicalDamage(hero)} daño)
+      <button onClick={onAttack} disabled={disabled} style={btnStyle('#dc3545')}>
+        {statuses.stunTurns > 0 ? '😵 Aturdido: dejá que el enemigo ataque' : `⚔️ Atacar (${calculateHeroPhysicalDamage(hero)} daño)`}
       </button>
+      {statuses.stunTurns > 0 && (
+        <p style={{ fontSize: '0.8em', color: '#ffd166', margin: '6px 0 0' }}>
+          Estás aturdido: al continuar, el enemigo ataca y recuperás tu turno.
+        </p>
+      )}
 
       <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #555' }}>
         <small style={{ display: 'block', marginBottom: '8px' }}>🧪 Inventario de Pociones:</small>
@@ -71,7 +76,7 @@ export const CombatUI: React.FC<Props> = ({ hero, enemies, targetIndex, disabled
                 <strong>{potion.name} (x{potion.quantity})</strong>
                 <div style={{ fontSize: '0.78em', color: '#ffd166' }}>⏱️ {potion.durationLabel}</div>
                 <p style={{ fontSize: '0.78em', margin: '4px 0 8px', color: '#ccc' }}>{potion.description}</p>
-                <button onClick={() => onUsePotion(potion.id)} disabled={disabled} style={btnStyle('#28a745')}>Usar Poción</button>
+                <button onClick={() => onUsePotion(potion.id)} disabled={disabled || statuses.stunTurns > 0} style={btnStyle('#28a745')}>Usar Poción</button>
               </div>
             ))}
           </div>
@@ -83,7 +88,7 @@ export const CombatUI: React.FC<Props> = ({ hero, enemies, targetIndex, disabled
           <small style={{ display: 'block', marginBottom: '8px' }}>✨ Grimorio del Mago (Maná: {hero.mana}/{hero.maxMana}):</small>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {SPELLS.map((spell) => (
-              <button key={spell.id} onClick={() => onCastSpell(spell.id)} disabled={disabled || hero.mana < spellCost(hero, spell.id)} style={btnStyle(spell.color)}>
+              <button key={spell.id} onClick={() => onCastSpell(spell.id)} disabled={disabled || statuses.stunTurns > 0 || hero.mana < spellCost(hero, spell.id)} style={btnStyle(spell.color)}>
                 {spell.label} ({spellCost(hero, spell.id)} MP)
               </button>
             ))}

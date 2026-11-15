@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { enemyTurn } from '../../../../shared/game/combatEngine';
+import { enemyTurn, heroAttack } from '../../../../shared/game/combatEngine';
 import { applyVictoryRewards } from '../../../../shared/game/combatLogic';
 import { spawnEncounterForRoom } from '../../../../shared/game/gameContent';
 import { makeEnemy, makeHero } from '../../test/fixtures';
@@ -76,5 +76,57 @@ describe('balance de recompensas', () => {
     const boss = spawnEncounterForRoom('BOSS', [], 0)[0];
     expect(boss.name).toBe('Dragón Ancestral');
     expect(boss.attack).toBe(119);
+  });
+});
+
+
+describe('efectos al esquivar o bloquear', () => {
+  it('no aplica aturdimiento si el ataque es bloqueado', () => {
+    const random = vi.spyOn(Math, 'random');
+    random.mockReturnValueOnce(0.99).mockReturnValueOnce(0).mockReturnValueOnce(0);
+    const hero = makeHero({ heroClass: 'CABALLERO', hp: 500, maxHp: 500, damageReduction: 0 });
+    const enemy = makeEnemy({ ability: 'STUN', attack: 100, isElite: true });
+    const result = enemyTurn(hero, [enemy]);
+
+    expect(result.hero.statuses?.stunTurns ?? 0).toBe(0);
+  });
+
+  it('sí aplica aturdimiento cuando el ataque conecta', () => {
+    const random = vi.spyOn(Math, 'random');
+    random.mockReturnValueOnce(0.99).mockReturnValueOnce(0.99).mockReturnValueOnce(0);
+    const hero = makeHero({ heroClass: 'CABALLERO', hp: 500, maxHp: 500, damageReduction: 0 });
+    const enemy = makeEnemy({ ability: 'STUN', attack: 100, isElite: true });
+    const result = enemyTurn(hero, [enemy]);
+
+    expect(result.hero.statuses?.stunTurns).toBe(1);
+  });
+
+  it('no aplica ácido pasivo si el ataque es bloqueado', () => {
+    const random = vi.spyOn(Math, 'random');
+    random.mockReturnValueOnce(0.99).mockReturnValueOnce(0).mockReturnValueOnce(0);
+    const hero = makeHero({ heroClass: 'CABALLERO', hp: 500, maxHp: 500, damageReduction: 0 });
+    const enemy = makeEnemy({ name: 'Mutante', ability: 'ACID', hp: 100, maxHp: 450, attack: 100, isBoss: true });
+    const result = enemyTurn(hero, [enemy]);
+
+    expect(result.hero.statuses?.acidTurns ?? 0).toBe(0);
+  });
+
+  it('no aplica el fuego del dragón si el héroe lo bloquea', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const hero = makeHero({ heroClass: 'CABALLERO', hp: 500, maxHp: 500, damageReduction: 0 });
+    const dragon = makeEnemy({ ability: 'FIRE', attack: 100, isBoss: true, hp: 400, maxHp: 400, specialCooldown: 0 });
+    const result = enemyTurn(hero, [dragon]);
+
+    expect(result.hero.statuses?.burnTurns ?? 0).toBe(0);
+  });
+
+  it('el escudo de shock no aturde si el enemigo esquiva', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const shock = { id: 'boss-shock', name: 'Shock', effectSummary: 'x', description: 'x' };
+    const hero = makeHero({ relics: [shock] });
+    const enemy = makeEnemy({ evasionChance: 1, statuses: { stunTurns: 0, acidTurns: 0, burnTurns: 0 } });
+    const result = heroAttack(hero, [enemy], 0);
+
+    expect(result.enemies[0].statuses?.stunTurns ?? 0).toBe(0);
   });
 });

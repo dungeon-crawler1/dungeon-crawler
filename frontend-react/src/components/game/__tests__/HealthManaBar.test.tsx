@@ -42,6 +42,16 @@ describe('HealthManaBar', () => {
     expect(screen.getByText(/Estatua: Real: -40 % daño recibido/)).toBeTruthy();
   });
 
+  it('muestra la regeneración de vida y la vida por enemigo en el tooltip', () => {
+    const hero = makeHero({ lifestealOnKill: 0.07, maxHpPerKill: 0.05, relics: [{ id: 'boss-drac', name: 'Vampirismo', effectSummary: 'x', description: 'x' }] });
+    render(<HealthManaBar hero={hero} room={1} score={0} onForfeit={vi.fn()} onRequestLeave={vi.fn()} disabled={false} />);
+
+    fireEvent.mouseEnter(screen.getByText('...'));
+    expect(screen.getByText(/Regeneración al eliminar: 7 %/)).toBeTruthy();
+    expect(screen.getByText(/Vampirismo Completo/)).toBeTruthy();
+    expect(screen.getByText(/Vida máxima: \+5 %/)).toBeTruthy();
+  });
+
   it('muestra la barra de maná cuando la clase posee maná', () => {
     const mago = makeHero({ heroClass: 'MAGO', mana: 70, maxMana: 100, percentAttackBonus: 0.5 });
     render(<HealthManaBar hero={mago} room={2} score={1} onForfeit={vi.fn()} onRequestLeave={vi.fn()} disabled={false} />);

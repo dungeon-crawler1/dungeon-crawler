@@ -208,7 +208,7 @@ export function applyEventEffect(hero: Hero, event: GameEvent, accepted: boolean
       const roll = Math.floor(Math.random() * 4);
       if (roll === 0) { next.percentMaxHpBonus += 0.3; return { hero: recalculateHeroStats(next), message: '⛲ ¡DESEO CONCEDIDO! (+5 %): +30 % Vida Máxima sobre tu base total.' }; }
       if (roll === 1) { next.percentAttackBonus += 0.4; return { hero: recalculateHeroStats(next), message: '⛲ ¡DESEO CONCEDIDO! (+5 %): +40 % Daño permanente sobre tu base total.' }; }
-      if (roll === 2) { next.damageReduction = Math.min(0.75, next.damageReduction + 0.2); return { hero: next, message: '⛲ ¡DESEO CONCEDIDO! (+5 %): -20 % daño recibido permanente.' }; }
+      if (roll === 2) { next.damageReduction = Math.min(0.8, next.damageReduction + 0.2); return { hero: next, message: '⛲ ¡DESEO CONCEDIDO! (+5 %): -20 % daño recibido permanente.' }; }
       next.shopDiscount = Math.min(0.6, next.shopDiscount + 0.2);
       return { hero: next, message: '⛲ ¡DESEO CONCEDIDO! (+5 %): -20 % descuento en mercaderes.' };
     }

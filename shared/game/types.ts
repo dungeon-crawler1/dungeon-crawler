@@ -67,6 +67,8 @@ export interface Hero {
   defense: number;
   damageReduction: number;
   evasionChance: number;
+  blockChance?: number;
+  baseMaxMana?: number;
   goldMultiplier: number;
   shopDiscount: number;
   gold: number;

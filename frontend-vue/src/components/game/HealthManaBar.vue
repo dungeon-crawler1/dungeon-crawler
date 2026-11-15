@@ -35,11 +35,14 @@
         <div>❤️ Vida Base: {{ hero.baseMaxHp }} (+{{ hero.flatMaxHpBonus }} suma) | Bono Vida: +{{ totalMaxHpPct }} %</div>
         <div>⚔️ Daño Base: {{ hero.baseAttack }} (+{{ hero.flatAttackBonus }} suma) | Daño Extra: +{{ totalDamagePct }} %</div>
         <div>🛡️ Reducción de Daño: {{ totalReductionPct }} %</div>
-        <div>🛡️ Prob. de Bloqueo: {{ hero.heroClass === 'CABALLERO' ? 20 : 0 }} %</div>
+        <div>🛡️ Prob. de Bloqueo: {{ blockPct }} %</div>
         <div>💨 Prob. Evasión: {{ totalEvasionPct }} %</div>
         <div>🪙 Monedas Extra: +{{ extraGoldPct }} %</div>
         <div>🏷️ Descuento en Mercaderes: -{{ discountPct }} %</div>
         <div>🗿 Estatua: {{ hero.statueBonus ?? 'Sin activar' }}</div>
+        <div v-if="(hero.lifestealOnKill ?? 0) > 0">🩸 Regeneración al eliminar: {{ Math.round((hero.lifestealOnKill ?? 0) * 100) }} % de vida máxima</div>
+        <div v-if="hero.relics.some((relic) => relic.id === 'boss-drac')">🩸 Vampirismo Completo: cura vida al eliminar (100 %, 50 %, 25 %…)</div>
+        <div v-if="(hero.maxHpPerKill ?? 0) > 0">🌱 Vida máxima: +{{ Math.round((hero.maxHpPerKill ?? 0) * 100) }} % por enemigo derrotado</div>
       </div>
 
       <div style="background: #555; height: 14px; border-radius: 4px; overflow: hidden; margin-top: 4px;">
@@ -65,7 +68,7 @@
 // =============================================================================
 import { computed, ref } from 'vue';
 import type { Hero } from '../../types/game';
-import { heroStatuses } from '../../utils/combatLogic';
+import { heroStatuses, totalBlockChance, totalDamagePercent, totalEvasion, totalReduction } from '../../utils/combatLogic';
 import RelicsDropdown from './RelicsDropdown.vue';
 
 const props = defineProps<{ hero: Hero; room: number; score: number; disabled: boolean }>();
@@ -75,10 +78,11 @@ const showModifiers = ref<boolean>(false);
 const hpPercent = computed(() => Math.max(0, Math.min(100, (props.hero.hp / props.hero.maxHp) * 100)));
 const manaPercent = computed(() => (props.hero.maxMana > 0 ? Math.max(0, Math.min(100, (props.hero.mana / props.hero.maxMana) * 100)) : 0));
 const totalPotions = computed(() => props.hero.inventory.reduce((sum, potion) => sum + potion.quantity, 0));
-const totalDamagePct = computed(() => Math.round((props.hero.percentAttackBonus + props.hero.battleBuffs.damageBoostPercent) * 100));
+const totalDamagePct = computed(() => Math.round(totalDamagePercent(props.hero) * 100));
 const totalMaxHpPct = computed(() => Math.round(props.hero.percentMaxHpBonus * 100));
-const totalReductionPct = computed(() => Math.round(Math.min(0.85, props.hero.damageReduction + props.hero.battleBuffs.defenseBonus) * 100));
-const totalEvasionPct = computed(() => Math.round((props.hero.evasionChance + props.hero.battleBuffs.evasionBonus) * 100));
+const totalReductionPct = computed(() => Math.round(totalReduction(props.hero) * 100));
+const totalEvasionPct = computed(() => Math.round(totalEvasion(props.hero) * 100));
+const blockPct = computed(() => Math.round(totalBlockChance(props.hero) * 100));
 const extraGoldPct = computed(() => Math.round((props.hero.goldMultiplier - 1) * 100));
 const discountPct = computed(() => Math.round(props.hero.shopDiscount * 100));
 const statusText = computed(() => {

@@ -22,14 +22,25 @@ export function spellCost(hero: Hero, spell: SpellId): number {
   return Math.ceil(SPELL_COSTS[spell] * (hero.spellCostMultiplier ?? 1));
 }
 
-// Recalcula vida máxima y ataque aplicando todos los % sobre (base + suma)
+// Recalcula vida, maná y ataque aplicando todos los % sobre (base + suma)
 export function recalculateHeroStats(hero: Hero): Hero {
   const totalBaseHp = hero.baseMaxHp + hero.flatMaxHpBonus;
   const computedMaxHp = Math.round(totalBaseHp * (1 + hero.percentMaxHpBonus));
   const maxHpGain = Math.max(0, computedMaxHp - hero.maxHp);
+  const totalBaseMana = hero.baseMaxMana ?? hero.maxMana;
+  const hasMana = totalBaseMana > 0 || hero.maxMana > 0;
+  const computedMaxMana = hasMana ? Math.round(totalBaseMana * (1 + (hero.percentMaxManaBonus ?? 0))) : hero.maxMana;
+  const manaGain = hasMana ? Math.max(0, computedMaxMana - hero.maxMana) : 0;
   const totalBaseAttack = hero.baseAttack + hero.flatAttackBonus;
   const computedAttack = Math.round(totalBaseAttack * (1 + hero.percentAttackBonus));
-  return { ...hero, maxHp: computedMaxHp, hp: Math.min(computedMaxHp, hero.hp + maxHpGain), attack: computedAttack };
+  return {
+    ...hero,
+    maxHp: computedMaxHp,
+    hp: Math.min(computedMaxHp, hero.hp + maxHpGain),
+    maxMana: computedMaxMana,
+    mana: hasMana ? Math.min(computedMaxMana, hero.mana + manaGain) : hero.mana,
+    attack: computedAttack,
+  };
 }
 
 function temporaryDamageBonus(hero: Hero): number {
@@ -40,19 +51,37 @@ function temporaryDamageBonus(hero: Hero): number {
   return strength + enrage + firstTurn;
 }
 
+// Todos los bonos porcentuales se suman entre sí (permanentes, batalla, estatua y hechizos)
+export function totalDamagePercent(hero: Hero): number {
+  return hero.percentAttackBonus + hero.battleBuffs.damageBoostPercent + temporaryDamageBonus(hero);
+}
+
+export function totalEvasion(hero: Hero): number {
+  const statuses = heroStatuses(hero);
+  const statusBonus = statuses.evasionTurns > 0 ? 0.4 : 0;
+  return Math.min(0.8, hero.evasionChance + hero.battleBuffs.evasionBonus + statusBonus);
+}
+
+export function totalReduction(hero: Hero): number {
+  return Math.min(0.8, hero.damageReduction + hero.battleBuffs.defenseBonus);
+}
+
+export function totalBlockChance(hero: Hero): number {
+  const base = hero.blockChance ?? (hero.heroClass === 'CABALLERO' ? 0.2 : 0);
+  return Math.min(0.8, base);
+}
+
 // Calcula daño físico aplicando porcentajes permanentes, de batalla y furia Bárbaro
 export function calculateHeroPhysicalDamage(hero: Hero): number {
   const totalBaseAttack = hero.baseAttack + hero.flatAttackBonus;
-  const percent = hero.percentAttackBonus + hero.battleBuffs.damageBoostPercent + temporaryDamageBonus(hero);
-  return Math.round(totalBaseAttack * (1 + percent));
+  return Math.round(totalBaseAttack * (1 + totalDamagePercent(hero)));
 }
 
 // Calcula daño de hechizos del Mago escalando sobre su base total
 export function calculateSpellDamage(hero: Hero, spell: SpellId): number {
   const totalBaseAttack = hero.baseAttack + hero.flatAttackBonus;
-  const totalPercent = hero.percentAttackBonus + hero.battleBuffs.damageBoostPercent + temporaryDamageBonus(hero);
   const scale = spell === 'RAYO' ? 1.6 : 1.15;
-  return Math.round(totalBaseAttack * (1 + totalPercent) * scale);
+  return Math.round(totalBaseAttack * (1 + totalDamagePercent(hero)) * scale);
 }
 
 interface CounterAttack {
@@ -67,13 +96,12 @@ function blockedAttack(note: string, potionBlocks: number, spellShields: number)
 }
 
 function knightBlocks(hero: Hero): boolean {
-  return hero.heroClass === 'CABALLERO' && Math.random() < 0.2;
+  return Math.random() < totalBlockChance(hero);
 }
 
 function heroEvades(hero: Hero): boolean {
-  const statuses = heroStatuses(hero);
-  const totalEvasion = hero.evasionChance + hero.battleBuffs.evasionBonus + (statuses.evasionTurns > 0 ? 0.4 : 0);
-  return totalEvasion > 0 && Math.random() < totalEvasion;
+  const evasion = totalEvasion(hero);
+  return evasion > 0 && Math.random() < evasion;
 }
 
 // Resuelve contraataque considerando bloqueo, evasión acumulada y reducción de daño
@@ -84,7 +112,7 @@ export function calculateEnemyCounterAttack(hero: Hero, enemy: Enemy): CounterAt
   if (knightBlocks(hero)) return blockedAttack(' (bloqueado con escudo)', 0, 0);
   if (heroEvades(hero)) return blockedAttack(' (esquivado)', 0, 0);
 
-  const effectiveReduction = Math.min(0.85, hero.damageReduction + hero.battleBuffs.defenseBonus);
+  const effectiveReduction = totalReduction(hero);
   const damageTaken = Math.max(1, Math.round(enemy.attack * (1 - effectiveReduction)));
   return { damageTaken, remainingPotionBlocks: 0, remainingSpellShields: 0, note: '' };
 }
@@ -107,7 +135,7 @@ export function applyVictoryRewards(hero: Hero, enemy: Enemy, updatedMana: numbe
     flatAttackBonus: hero.flatAttackBonus,
     percentAttackBonus: hero.percentAttackBonus + (relic?.id === 'boss-acid' ? 0.5 : 0),
     percentMaxHpBonus: hero.percentMaxHpBonus + essenceBonus,
-    damageReduction: Math.min(0.75, hero.damageReduction + (relic?.id === 'boss-dragon' ? 0.5 : 0)),
+    damageReduction: Math.min(0.8, hero.damageReduction + (relic?.id === 'boss-dragon' ? 0.5 : 0)),
   });
   return { hero: victor, earnedGold };
 }
@@ -121,12 +149,7 @@ function potionPurchase(hero: Hero, item: ShopItem): Hero {
 }
 
 function withManaBonus(hero: Hero, bonus: number): Hero {
-  return {
-    ...hero,
-    maxMana: Math.round(hero.maxMana * (1 + bonus)),
-    mana: Math.round(hero.mana * (1 + bonus)),
-    percentMaxManaBonus: (hero.percentMaxManaBonus ?? 0) + bonus,
-  };
+  return recalculateHeroStats({ ...hero, percentMaxManaBonus: (hero.percentMaxManaBonus ?? 0) + bonus });
 }
 
 const RELIC_EFFECTS: Record<string, (hero: Hero) => Hero> = {
@@ -149,7 +172,7 @@ export function applyShopPurchase(hero: Hero, item: ShopItem): Hero {
     percentMaxHpBonus: hero.percentMaxHpBonus + item.percentMaxHpBonus,
     flatAttackBonus: hero.flatAttackBonus + item.flatAttackBonus,
     percentAttackBonus: hero.percentAttackBonus + item.percentAttackBonus,
-    damageReduction: Math.min(0.75, hero.damageReduction + item.reductionBonus),
+    damageReduction: Math.min(0.8, hero.damageReduction + item.reductionBonus),
     goldMultiplier: hero.goldMultiplier + item.goldBonus,
     shopDiscount: Math.min(0.6, hero.shopDiscount + item.discountBonus),
     relics: [...hero.relics, { id: item.id, name: item.name, effectSummary: item.effectSummary, description: item.description }],
@@ -169,9 +192,9 @@ export function consumeInventoryPotion(hero: Hero, potionId: string): { hero: He
   let nextHp = hero.hp;
   if (target.effectType === 'HEAL') nextHp = Math.min(hero.maxHp, hero.hp + target.value);
   if (target.effectType === 'HEAL_FULL') nextHp = hero.maxHp;
-  if (target.effectType === 'DAMAGE_BOOST') nextBuffs.damageBoostPercent = Math.max(nextBuffs.damageBoostPercent, target.value);
-  if (target.effectType === 'EVASION_BOOST') nextBuffs.evasionBonus = Math.min(0.75, nextBuffs.evasionBonus + target.value);
-  if (target.effectType === 'DEFENSE_BOOST') nextBuffs.defenseBonus = Math.min(0.75, nextBuffs.defenseBonus + target.value);
+  if (target.effectType === 'DAMAGE_BOOST') nextBuffs.damageBoostPercent += target.value;
+  if (target.effectType === 'EVASION_BOOST') nextBuffs.evasionBonus = Math.min(0.8, nextBuffs.evasionBonus + target.value);
+  if (target.effectType === 'DEFENSE_BOOST') nextBuffs.defenseBonus = Math.min(0.8, nextBuffs.defenseBonus + target.value);
   if (target.effectType === 'BLOCK_ATTACKS') nextBuffs.blockCharges += target.value;
   return { hero: { ...hero, hp: nextHp, inventory: nextInventory, battleBuffs: nextBuffs }, message: `🧪 Usaste [${target.name}] (${target.durationLabel}): ${target.description}` };
 }

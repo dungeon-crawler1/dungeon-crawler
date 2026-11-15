@@ -33,6 +33,16 @@ describe('HealthManaBar', () => {
     expect(wrapper.text()).toContain('Estatua: Real: -40 % daño recibido');
   });
 
+  it('muestra la regeneración de vida y la vida por enemigo en el tooltip', async () => {
+    const hero = makeHero({ lifestealOnKill: 0.07, maxHpPerKill: 0.05, relics: [{ id: 'boss-drac', name: 'Vampirismo', effectSummary: 'x', description: 'x' }] });
+    const wrapper = mount(HealthManaBar, { props: { hero, room: 1, score: 0, disabled: false } });
+
+    await wrapper.find('span').trigger('mouseenter');
+    expect(wrapper.text()).toContain('Regeneración al eliminar: 7 %');
+    expect(wrapper.text()).toContain('Vampirismo Completo');
+    expect(wrapper.text()).toContain('Vida máxima: +5 %');
+  });
+
   it('emite terminar partida y volver al inicio', async () => {
     const wrapper = mount(HealthManaBar, { props: { hero: makeHero(), room: 1, score: 0, disabled: false } });
     const buttons = wrapper.findAll('button');

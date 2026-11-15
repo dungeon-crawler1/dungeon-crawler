@@ -2,7 +2,7 @@
 // MOTOR DE COMBATE COMPARTIDO: TURNOS, GRUPOS, ESTADOS Y HABILIDADES ESPECIALES
 // =============================================================================
 import type { Enemy, EnemyStatuses, Hero, HeroStatuses } from './types';
-import { applyVictoryRewards, calculateHeroPhysicalDamage, calculateSpellDamage, heroStatuses } from './combatLogic';
+import { applyVictoryRewards, calculateHeroPhysicalDamage, calculateSpellDamage, heroStatuses, totalBlockChance, totalEvasion, totalReduction } from './combatLogic';
 
 export interface BattleResult {
   hero: Hero;
@@ -46,10 +46,10 @@ function defend(hero: Hero, rawDamage: number): { hero: Hero; damage: number; no
   if (hero.shieldCharges > 0) {
     return { hero: { ...hero, shieldCharges: hero.shieldCharges - 1 }, damage: 0, note: ' (bloqueado por Escudo Arcano)' };
   }
-  if (hero.heroClass === 'CABALLERO' && Math.random() < 0.2) return { hero, damage: 0, note: ' (bloqueado con escudo)' };
-  const evasion = hero.evasionChance + hero.battleBuffs.evasionBonus + (statuses.evasionTurns > 0 ? 0.4 : 0);
+  if (Math.random() < totalBlockChance(hero)) return { hero, damage: 0, note: ' (bloqueado con escudo)' };
+  const evasion = totalEvasion(hero);
   if (evasion > 0 && Math.random() < evasion) return { hero, damage: 0, note: ' (esquivado)' };
-  const reduction = Math.min(0.85, hero.damageReduction + hero.battleBuffs.defenseBonus);
+  const reduction = totalReduction(hero);
   return { hero, damage: Math.max(1, Math.round(rawDamage * (1 - reduction))), note: '' };
 }
 
@@ -124,7 +124,7 @@ function applyAttackRelics(hero: Hero, ctx: AttackContext): Enemy[] {
   }
   next = hammerStrike(hero, next, ctx.index, ctx.logs);
   next[ctx.index] = reviveIfNeeded(next[ctx.index], ctx.logs);
-  next[ctx.index] = applyRelicOnHit(hero, next[ctx.index], ctx.logs);
+  if (!ctx.dodged) next[ctx.index] = applyRelicOnHit(hero, next[ctx.index], ctx.logs);
   return next;
 }
 
@@ -176,7 +176,7 @@ function enemySpecial(enemy: Enemy, hero: Hero, logs: string[]): SpecialResult {
   return { hero, enemy, damage: enemy.attack, kind: 'NORMAL' };
 }
 
-function applyEnemyHit(hero: Hero, rawDamage: number, logs: string[], name: string): { hero: Hero; dead: boolean; damage: number } {
+function applyEnemyHit(hero: Hero, rawDamage: number, logs: string[], name: string): { hero: Hero; dead: boolean; damage: number; hit: boolean } {
   if (rawDamage < 0) {
     let nextHero = hero;
     let total = 0;
@@ -186,14 +186,14 @@ function applyEnemyHit(hero: Hero, rawDamage: number, logs: string[], name: stri
       nextHero = { ...result.hero, hp: Math.max(0, result.hero.hp - result.damage) };
       total += result.damage;
       logs.push(`🪨 Roca: ${result.damage} de daño${result.note}.`);
-      if (nextHero.hp === 0) return { hero: nextHero, dead: true, damage: total };
+      if (nextHero.hp === 0) return { hero: nextHero, dead: true, damage: total, hit: total > 0 };
     }
-    return { hero: nextHero, dead: false, damage: total };
+    return { hero: nextHero, dead: false, damage: total, hit: total > 0 };
   }
   const result = defend(hero, rawDamage);
   const nextHp = Math.max(0, result.hero.hp - result.damage);
   logs.push(`💥 ${name} ataca: ${result.damage} de daño${result.note}.`);
-  return { hero: { ...result.hero, hp: nextHp }, dead: nextHp === 0, damage: result.damage };
+  return { hero: { ...result.hero, hp: nextHp }, dead: nextHp === 0, damage: result.damage, hit: result.damage > 0 && !result.note };
 }
 
 function applyAcid(hero: Hero, enemy: Enemy, logs: string[]): Hero {
@@ -219,8 +219,8 @@ function normalAttack(enemy: Enemy, hero: Hero, logs: string[]): { hero: Hero; e
   }
   const result = applyEnemyHit(hero, raw, logs, enemy.name);
   let nextHero = result.hero;
-  if (enemy.ability === 'ACID' && enemy.hp < enemy.maxHp * 0.3) nextHero = applyAcid(nextHero, enemy, logs);
-  if (enemy.ability === 'STUN' && Math.random() < (enemy.isBoss ? 0.2 : 0.15)) {
+  if (result.hit && enemy.ability === 'ACID' && enemy.hp < enemy.maxHp * 0.3) nextHero = applyAcid(nextHero, enemy, logs);
+  if (result.hit && enemy.ability === 'STUN' && Math.random() < (enemy.isBoss ? 0.2 : 0.15)) {
     nextHero = { ...nextHero, statuses: { ...heroStatuses(nextHero), stunTurns: 1 } };
     logs.push('😵 Quedás aturdido y perdés el próximo ataque.');
   }
@@ -229,6 +229,13 @@ function normalAttack(enemy: Enemy, hero: Hero, logs: string[]): { hero: Hero; e
 }
 
 function specialAttack(enemy: Enemy, hero: Hero, logs: string[]): { hero: Hero; enemy: Enemy; heroDead: boolean } {
+  if (enemy.ability === 'FIRE' || enemy.ability === 'ACID') {
+    const guarded = defend(hero, 0);
+    if (guarded.note) {
+      logs.push(`🛡️ ${enemy.name} no pudo aplicar su efecto${guarded.note}.`);
+      return { hero: guarded.hero, enemy, heroDead: false };
+    }
+  }
   if (enemy.ability === 'CHARGE') {
     if (enemy.hp < enemy.maxHp * 0.5) {
       logs.push('⚡ ¡El robot se enfurece y descarga el ataque eléctrico en el mismo turno!');

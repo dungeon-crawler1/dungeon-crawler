@@ -15,6 +15,7 @@ function createHero(clase: HeroClassId): Hero {
       statuses: { evasionTurns: 0, strengthTurns: 0, stunTurns: 0, acidTurns: 0, burnTurns: 0 },
       turn: 1, defeatedEnemies: 0, percentMaxManaBonus: 0, spellCostMultiplier: 1,
       lifestealOnKill: 0, maxHpPerKill: 0, firstTurnDamageBonus: 0, previewEnabled: false,
+    baseMaxMana: base.maxMana,
     inventory: [{ id: 'pot-heal-sm', name: 'Frasco de Curación Pequeño', effectType: 'HEAL', value: 50, durationLabel: 'Instantáneo', description: 'Regenera +50 HP al usarse.', quantity: 1 }],
   };
 }

@@ -98,6 +98,7 @@ export function castSpell(state: GameState, spell: SpellId): TurnOutcome {
   const hero = state.hero;
   const enemies = currentEnemies(state);
   if (!hero) return { state, allDead: false, heroDead: false };
+  if (heroStatuses(hero).stunTurns > 0) return performAttack(state);
   const cost = spellCost(hero, spell);
   if (hero.mana < cost) return { state: { ...state, logs: appendLogs(state, ['No tenés maná suficiente.']) }, allDead: false, heroDead: false };
 
@@ -119,6 +120,7 @@ export function castSpell(state: GameState, spell: SpellId): TurnOutcome {
 export function usePotionTurn(state: GameState, potionId: string, consume: (hero: Hero, id: string) => { hero: Hero; message: string; escaped?: boolean }): TurnOutcome {
   const hero = state.hero;
   if (!hero) return { state, allDead: false, heroDead: false };
+  if (heroStatuses(hero).stunTurns > 0) return performAttack(state);
   const result = consume(hero, potionId);
   const next = { ...state, hero: result.hero, logs: appendLogs(state, [result.message]) };
   if (result.escaped) {

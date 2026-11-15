@@ -66,3 +66,15 @@ describe('CombatUI', () => {
     expect((view.getByText(/Bola de Fuego/) as HTMLButtonElement).disabled).toBe(true);
   });
 });
+
+
+describe('aturdimiento', () => {
+  it('permite continuar para que el enemigo ataque y bloquea otras acciones', () => {
+    const hero = makeHero({ statuses: { stunTurns: 1, evasionTurns: 0, strengthTurns: 0, acidTurns: 0, burnTurns: 0 } });
+    const { view } = setup({ hero });
+    const button = view.getByText(/Aturdido: dejá que el enemigo ataque/) as HTMLButtonElement;
+
+    expect(button.disabled).toBe(false);
+    expect(view.getByText(/recuperás tu turno/)).toBeTruthy();
+  });
+});

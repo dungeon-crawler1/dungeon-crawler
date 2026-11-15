@@ -64,3 +64,15 @@ describe('CombatUI', () => {
     expect(buttons[2].attributes('disabled')).toBeDefined();
   });
 });
+
+
+describe('aturdimiento', () => {
+  it('permite continuar para que el enemigo ataque', () => {
+    const hero = makeHero({ statuses: { stunTurns: 1, evasionTurns: 0, strengthTurns: 0, acidTurns: 0, burnTurns: 0 } });
+    const wrapper = mountCombat({ hero });
+    const button = wrapper.findAll('button')[1];
+
+    expect(button.text()).toContain('Aturdido: dejá que el enemigo ataque');
+    expect(button.attributes('disabled')).toBeUndefined();
+  });
+});

@@ -20,9 +20,12 @@
       <span v-if="blockCharges > 0"> [Bloqueo: {{ blockCharges }}]</span>
     </div>
 
-    <button type="button" :disabled="disabled || statuses.stunTurns > 0" :style="buttonStyle('#dc3545')" @click="$emit('attack')">
-      ⚔️ Atacar ({{ physicalDamage }} daño)
+    <button type="button" :disabled="disabled" :style="buttonStyle('#dc3545')" @click="$emit('attack')">
+      {{ statuses.stunTurns > 0 ? '😵 Aturdido: dejá que el enemigo ataque' : `⚔️ Atacar (${physicalDamage} daño)` }}
     </button>
+    <p v-if="statuses.stunTurns > 0" style="font-size: 0.8em; color: #ffd166; margin: 6px 0 0;">
+      Estás aturdido: al continuar, el enemigo ataca y recuperás tu turno.
+    </p>
 
     <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #555;">
       <small style="display: block; margin-bottom: 8px;">🧪 Inventario de Pociones:</small>
@@ -32,7 +35,7 @@
           <strong>{{ potion.name }} (x{{ potion.quantity }})</strong>
           <div style="font-size: 0.78em; color: #ffd166;">⏱️ {{ potion.durationLabel }}</div>
           <p style="font-size: 0.78em; margin: 4px 0 8px; color: #ccc;">{{ potion.description }}</p>
-          <button type="button" :disabled="disabled" :style="buttonStyle('#28a745')" @click="$emit('use-potion', potion.id)">Usar Poción</button>
+          <button type="button" :disabled="disabled || statuses.stunTurns > 0" :style="buttonStyle('#28a745')" @click="$emit('use-potion', potion.id)">Usar Poción</button>
         </div>
       </div>
     </div>
@@ -44,7 +47,7 @@
           v-for="spell in spells"
           :key="spell.id"
           type="button"
-          :disabled="disabled || hero.mana < spellCost(hero, spell.id)"
+          :disabled="disabled || statuses.stunTurns > 0 || hero.mana < spellCost(hero, spell.id)"
           :style="buttonStyle(spell.color)"
           @click="$emit('cast-spell', spell.id)"
         >
