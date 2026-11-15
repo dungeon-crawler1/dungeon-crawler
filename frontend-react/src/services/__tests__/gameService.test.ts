@@ -46,18 +46,17 @@ describe('generateProceduralDoors', () => {
     expect(types).not.toContain('LUXURY_MERCHANT');
   });
 
-  it('reemplaza la primera puerta por un jefe cada 10 salas desde la 20', () => {
+  it('reemplaza la primera puerta por un jefe al entrar a la sala 20, 30 o 40', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
-    const doors = generateProceduralDoors(20, ['Drácula']);
-
-    expect(doors[0].type).toBe('BOSS');
-    expect(doors[0].title).toBe('Cámara del Jefe');
+    expect(generateProceduralDoors(19, ['Drácula'])[0].type).toBe('BOSS');
+    expect(generateProceduralDoors(29, ['Drácula'])[0].type).toBe('BOSS');
+    expect(generateProceduralDoors(20, ['Drácula'])[0].type).not.toBe('BOSS');
   });
 
   it('no crea puerta de jefe cuando todos los jefes fueron derrotados', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
     const defeated = ['Dragón Ancestral', 'Emperador Caído', 'Criatura Mutante Gigante', 'Robot Enorme Descontrolado', 'Titán Esquelético', 'Drácula'];
-    const doors = generateProceduralDoors(20, defeated);
+    const doors = generateProceduralDoors(19, defeated);
 
     expect(doors.some((d) => d.type === 'BOSS')).toBe(false);
   });

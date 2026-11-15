@@ -112,7 +112,7 @@ interface BuildContext {
 }
 
 function buildCombat(type: ResolvedType, ctx: BuildContext): Encounter {
-  const enemies = spawnEncounterForRoom(type as 'COMBAT' | 'ELITE' | 'BOSS', ctx.hero.defeatedBosses, ctx.score);
+  const enemies = spawnEncounterForRoom(type as 'COMBAT' | 'ELITE' | 'BOSS', ctx.hero.defeatedBosses, ctx.score + 1);
   const names = enemies.map((enemy) => `${enemy.name} (${enemy.hp} HP)`).join(', ');
   return { inCombat: true, enemy: enemies[0], enemies, merchantItems: [], isLuxuryMerchant: false, currentEvent: null, log: `${ctx.note}Entraste a ${ctx.door.title}: ${names}.` };
 }
