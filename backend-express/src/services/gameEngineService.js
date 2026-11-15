@@ -23,15 +23,33 @@ async function startRun(usuarioId, clase) {
   return await gameRepository.createRun(usuarioId, clase, stats.vida, stats.vida, stats.ataque, stats.defensa, estadoInicial);
 }
 
-// Procesar un turno de la partida y actualizar el estado
+// Interpreta el estado que envía el cliente; si no es JSON válido, usa valores seguros
+function parseAction(accion) {
+  try {
+    const data = typeof accion === 'string' ? JSON.parse(accion) : accion;
+    return data && typeof data === 'object' ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+// Procesar un turno de la partida y persistir el estado y las estadísticas reales
 async function playTurn(runId, usuarioId, accion) {
-  const puntuacion = 10;
-  const estadoActualizado = { 
-    habitaciones_superadas: 1, 
-    historial_habitaciones: [{ habitacion: 1, evento: 'COMBATE_NORMAL', resultado: 'VICTORIA' }],
-    opciones_puertas: generateRooms(1) 
+  const data = parseAction(accion);
+  const puntuacion = Number.isFinite(data.puntuacion) ? data.puntuacion : 10;
+  const estadoActualizado = data.estado_run || {
+    habitaciones_superadas: puntuacion,
+    historial_habitaciones: [],
+    opciones_puertas: generateRooms(puntuacion)
   };
-  return await gameRepository.updateRun(runId, 90, 15, puntuacion, 'EN_PROGRESO', estadoActualizado);
+  return await gameRepository.updateRun(
+    runId,
+    Number.isFinite(data.vida) ? data.vida : 90,
+    Number.isFinite(data.monedas) ? data.monedas : 15,
+    puntuacion,
+    data.resultado || 'EN_PROGRESO',
+    estadoActualizado
+  );
 }
 
 // Obtener el Top 10 global

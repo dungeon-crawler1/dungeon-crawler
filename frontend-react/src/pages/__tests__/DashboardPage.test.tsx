@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { DashboardPage } from '../DashboardPage';
+
+vi.mock('../../components/leaderboard/LeaderboardSection', () => ({ LeaderboardSection: () => <div>Leaderboard stub</div> }));
 
 function renderPage() {
   return render(

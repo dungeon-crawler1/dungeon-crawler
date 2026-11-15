@@ -4,6 +4,7 @@
 import type { ApiResponse, BackendRunRecord, GameState, Hero, HeroClassId } from './types';
 import { CLASS_CONFIG, EMPTY_BATTLE_BUFFS, generateProceduralDoors } from './gameContent';
 import { attachDoorPreviews } from './roomLogic';
+import { emptyStats } from './turnLogic';
 
 export type RequestFn = <T>(endpoint: string, options?: RequestInit) => Promise<T>;
 
@@ -31,6 +32,7 @@ async function startGameRun(request: RequestFn, clase: HeroClassId): Promise<Gam
     availableDoors: doors, merchantItems: [], isLuxuryMerchant: false, currentEvent: null,
     logs: [`[Sala #1] Iniciaste como ${hero.name} (${hero.maxHp} HP, ${hero.attack} Daño, ${hero.gold} monedas).`],
     isFinished: false, finishReason: null, showLeaveConfirm: false,
+    stats: emptyStats(),
   };
 }
 

@@ -1,4 +1,6 @@
 """Tests del servicio del motor de juego."""
+import json
+
 import pytest
 from fastapi import HTTPException
 from app.services import game_engine_service
@@ -24,6 +26,20 @@ async def test_play_turn_actualiza_puntuacion(fake_db):
     updated = await game_engine_service.play_turn(run["id"], 1, "ATACAR")
     assert updated["puntuacion"] == 10
     assert updated["vida_actual"] == 90
+
+
+async def test_play_turn_persiste_el_estado_del_cliente(fake_db):
+    run = await game_engine_service.start_run(1, "MAGO")
+    accion = json.dumps({
+        "vida": 42, "monedas": 9, "puntuacion": 4, "resultado": "DERROTA",
+        "estado_run": {"historial_habitaciones": [{"habitacion": 1}], "dano_infligido": 80},
+    })
+    updated = await game_engine_service.play_turn(run["id"], 1, accion)
+    assert updated["vida_actual"] == 42
+    assert updated["monedas_actuales"] == 9
+    assert updated["puntuacion"] == 4
+    assert updated["resultado"] == "DERROTA"
+    assert json.loads(updated["estado_run"])["dano_infligido"] == 80
 
 
 async def test_get_leaderboard_global(fake_db):

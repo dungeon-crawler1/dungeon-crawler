@@ -10,6 +10,9 @@ export interface BattleResult {
   logs: string[];
   allDead: boolean;
   heroDead: boolean;
+  damageDealt?: number;
+  damageTaken?: number;
+  goldEarned?: number;
 }
 
 const EMPTY_ENEMY_STATUSES: EnemyStatuses = { stunTurns: 0, acidTurns: 0, burnTurns: 0 };
@@ -140,7 +143,17 @@ export function heroAttack(hero: Hero, enemies: Enemy[], targetIndex: number, sp
   logs.push(first.dodged ? `❌ ${enemies[index].name} esquivó el ataque.` : `⚔️ ${spell ? `Hechizo ${spell}` : 'Ataque'}: ${damage} de daño a ${enemies[index].name}.`);
   nextEnemies = applyAttackRelics(hero, { enemies: nextEnemies, index, damage, dodged: first.dodged, logs });
   const settled = settleKills(hero, nextEnemies, logs);
-  return { hero: { ...settled.hero, turn: (settled.hero.turn ?? 1) + 1 }, enemies: settled.enemies, logs, allDead: allDead(settled.enemies), heroDead: false };
+  const hpBefore = enemies.reduce((sum, enemy) => sum + Math.max(0, enemy.hp), 0);
+  const hpAfter = settled.enemies.reduce((sum, enemy) => sum + Math.max(0, enemy.hp), 0);
+  return {
+    hero: { ...settled.hero, turn: (settled.hero.turn ?? 1) + 1 },
+    enemies: settled.enemies,
+    logs,
+    allDead: allDead(settled.enemies),
+    heroDead: false,
+    damageDealt: Math.max(0, hpBefore - hpAfter),
+    goldEarned: Math.max(0, settled.hero.gold - hero.gold),
+  };
 }
 
 interface SpecialResult {
@@ -306,7 +319,8 @@ export function enemyTurn(hero: Hero, enemies: Enemy[]): BattleResult {
     heroDead = result.heroDead;
     return result.enemy;
   });
-  return endOfTurn(nextHero, nextEnemies, logs, heroDead);
+  const result = endOfTurn(nextHero, nextEnemies, logs, heroDead);
+  return { ...result, damageTaken: Math.max(0, hero.hp - result.hero.hp) };
 }
 
 export function skipTurn(hero: Hero, enemies: Enemy[]): BattleResult {

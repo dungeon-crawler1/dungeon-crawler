@@ -1,5 +1,6 @@
 # =============================================================================
 # SERVICIO DE NEGOCIO DEL MOTOR DE JUEGO (FASTAPI)
+import json
 # =============================================================================
 from fastapi import HTTPException
 from app.repositories import game_repository
@@ -25,14 +26,31 @@ async def start_run(user_id: int, clase: str):
         user_id, clase, stats["vida"], stats["vida"], stats["ataque"], stats["defensa"], estado_inicial
     )
 
-# Procesar un turno de la partida y actualizar el estado
+def parse_action(accion):
+    """Interpreta el estado que envía el cliente; si no es JSON válido, usa {} ."""
+    try:
+        data = json.loads(accion) if isinstance(accion, str) else accion
+        return data if isinstance(data, dict) else {}
+    except (ValueError, TypeError):
+        return {}
+
+# Procesar un turno de la partida y persistir el estado y las estadísticas reales
 async def play_turn(run_id: int, user_id: int, accion: str):
-    estado_actualizado = {
-        "habitaciones_superadas": 1,
-        "historial_habitaciones": [{"habitacion": 1, "evento": "COMBATE_NORMAL", "resultado": "VICTORIA"}],
-        "opciones_puertas": generate_rooms(1)
+    data = parse_action(accion)
+    puntuacion = data.get("puntuacion", 10)
+    estado_actualizado = data.get("estado_run") or {
+        "habitaciones_superadas": puntuacion,
+        "historial_habitaciones": [],
+        "opciones_puertas": generate_rooms(puntuacion)
     }
-    return await game_repository.update_run(run_id, 90, 15, 10, "EN_PROGRESO", estado_actualizado)
+    return await game_repository.update_run(
+        run_id,
+        data.get("vida", 90),
+        data.get("monedas", 15),
+        puntuacion,
+        data.get("resultado", "EN_PROGRESO"),
+        estado_actualizado
+    )
 
 # Obtener el Top 10 global
 async def get_leaderboard():

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LeaderboardSection } from '../components/leaderboard/LeaderboardSection';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '20px' }}>
+    <div style={{ maxWidth: '980px', margin: '40px auto', padding: '20px' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ddd', paddingBottom: '10px' }}>
         <h1>Panel Principal - Roguelike Game (React)</h1>
         <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
@@ -28,6 +29,8 @@ export const DashboardPage: React.FC = () => {
             ⚔️ Entrar a la Mazmorra
           </button>
         </div>
+
+        <LeaderboardSection />
       </main>
     </div>
   );
