@@ -175,8 +175,9 @@ function enemySpecial(enemy: Enemy, hero: Hero, logs: string[]): SpecialResult {
   }
   if (enemy.ability === 'ROCKS') {
     const hits = randInt(3, 5);
-    logs.push(`🪨 El titán golpea el suelo: ${hits} rocas de 50 de daño.`);
-    return { hero, enemy, damage: -hits * 50, kind: 'ROCKS' };
+    const rockDamage = Math.max(8, Math.round(enemy.attack * 0.35));
+    logs.push(`🪨 El titán golpea el suelo: ${hits} rocas de ${rockDamage} de daño.`);
+    return { hero, enemy, damage: hits * rockDamage, kind: 'ROCKS' };
   }
   if (enemy.ability === 'DRAIN') {
     logs.push('🩸 Drácula te drena la sangre y regenera su vida.');

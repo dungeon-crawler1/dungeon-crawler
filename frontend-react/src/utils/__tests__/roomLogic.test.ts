@@ -154,6 +154,15 @@ describe('applyEventEffect', () => {
     expect(picaro.goldMultiplier).toBe(1.4);
   });
 
+  it('suma las bonificaciones de estatua a las que ya tiene el héroe', () => {
+    const caballero = applyEventEffect(makeHero({ damageReduction: 0.2 }), makeEvent('STATUE', { statues: ['CABALLERO'] }), true).hero;
+    const picaro = applyEventEffect(makeHero({ heroClass: 'PICARO', evasionChance: 0.2, goldMultiplier: 1.25 }), makeEvent('STATUE', { statues: ['PICARO'] }), true).hero;
+
+    expect(caballero.damageReduction).toBeCloseTo(0.6);
+    expect(picaro.evasionChance).toBeCloseTo(0.5);
+    expect(picaro.goldMultiplier).toBeCloseTo(1.65);
+  });
+
   it('la estatua mágica reduce a la mitad el costo de los hechizos', () => {
     const result = applyEventEffect(makeHero({ heroClass: 'MAGO', mana: 50, maxMana: 100 }), makeEvent('STATUE', { statues: ['MAGO'] }), true);
 

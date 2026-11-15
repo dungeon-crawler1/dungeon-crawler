@@ -71,11 +71,11 @@ describe('balance de recompensas', () => {
     expect(spawnEncounterForRoom('BOSS', [], 0)[0].goldReward).toBe(600);
   });
 
-  it('los jefes tienen el daño reducido un 15 %', () => {
+  it('los jefes tienen un daño balanceado', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const boss = spawnEncounterForRoom('BOSS', [], 0)[0];
     expect(boss.name).toBe('Dragón Ancestral');
-    expect(boss.attack).toBe(119);
+    expect(boss.attack).toBe(32);
   });
 });
 
@@ -128,5 +128,37 @@ describe('efectos al esquivar o bloquear', () => {
     const result = heroAttack(hero, [enemy], 0);
 
     expect(result.enemies[0].statuses?.stunTurns ?? 0).toBe(0);
+  });
+});
+
+
+describe('balance final de jefes', () => {
+  it('el jefe más fuerte no mata al Mago de dos golpes normales', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const hero = makeHero({ heroClass: 'MAGO', hp: 80, maxHp: 80, damageReduction: 0 });
+    const boss = makeEnemy({ name: 'Emperador', isBoss: true, attack: 32, hp: 350, maxHp: 350 });
+    const first = enemyTurn(hero, [boss]);
+    const second = enemyTurn(first.hero, first.enemies);
+    expect(second.hero.hp).toBeGreaterThan(0);
+  });
+
+  it('las rocas del titán no borran al jugador de un golpe', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const titan = makeEnemy({ name: 'Titán', isBoss: true, ability: 'ROCKS', attack: 34, hp: 500, maxHp: 500, specialCooldown: 0 });
+    const result = enemyTurn(mage(), [titan]);
+    expect(result.hero.hp).toBeGreaterThan(0);
+    expect(result.hero.hp).toBeLessThan(500);
+  });
+});
+
+
+describe('derrota del jugador', () => {
+  it('marca heroDead cuando el golpe supera la vida restante', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const hero = makeHero({ heroClass: 'MAGO', hp: 20, maxHp: 80, damageReduction: 0 });
+    const enemy = makeEnemy({ attack: 100, isElite: true });
+    const result = enemyTurn(hero, [enemy]);
+    expect(result.heroDead).toBe(true);
+    expect(result.hero.hp).toBe(0);
   });
 });
