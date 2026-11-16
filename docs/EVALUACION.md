@@ -3,23 +3,22 @@
 
 > Documento **generado automáticamente** por la cátedra de Programación III (RepoSense + análisis de calidad + constancia). **No editar a mano**: se regenera en cada evaluación.
 > Rama evaluada: `main`. Análisis **heurístico** (regex + métricas): es una criba para orientar la revisión, **no una nota**.
-> Generado: 2026-11-14.
+> Generado: 2026-11-16.
 
 ## 1. Veredicto
 
 | Aspecto | Resultado |
 |---|---|
 | Tipo de proyecto | app |
-| Índice de calidad de servicios | **50/100** (mínimo 50) |
-| Criterios cumplidos | **14/16** |
-| Aprobado (semáforo) | **NO** |
-| Código (LOC) | 1,438 |
-| Archivos de código | 53 |
-| Tests (archivos) | 0 |
-| Cobertura de líneas | no medible (mínimo 80%) |
+| Índice de calidad de servicios | **100/100** (mínimo 50) |
+| Criterios cumplidos | **16/16** |
+| Aprobado (semáforo) | **SI** |
+| Código (LOC) | 4,768 |
+| Archivos de código | 109 |
+| Tests (archivos) | 63 |
+| Cobertura de líneas | 99.5% (mínimo 80%) |
 | Capas detectadas | presentacion, logica, datos, vistas, servicios, estado |
 | Pushes directos a `main` (sin PR) | 1 |
-| Tope por duplicación | `DUP>=15%` → índice ≤ 50 |
 
 > **Pushes directos:** se detectaron **1** commit(s) a `main` que no pasaron por un Pull Request. El flujo esperado es **rama → PR → revisión → merge**; el PR se aprueba con el mensaje `Aprobado`. Evitá pushear directo a `main`: la ruleset lo bloquea y el commit directo queda auditado.
 
@@ -29,7 +28,7 @@
 
 | Autor | Commits | Código (LOC) | Tests (LOC) | Docs (LOC) | Días activos | % del código |
 |---|---:|---:|---:|---:|---:|---:|
-| Mateo Gomez | 17 | 1,778 | 0 | 254 | 10 | 100% |
+| Mateo Gomez | 29 | 5,452 | 4,799 | 531 | 13 | 100% |
 
 > _El LOC de autoría lo calcula RepoSense sobre el historial y puede diferir del LOC de código del análisis de calidad (que mira solo el estado de `main`)._
 
@@ -39,7 +38,7 @@
 
 | Alumno | Sesiones | Cumplimiento | Pausa | Recencia | IC | Nivel | Para subir de nivel |
 |---|--:|--:|--:|--:|--:|--|--|
-| Mateo Gomez | 11 | 42% | 21 d | 93% | **40** | No aprueba | Cumplimiento 42% (mín. 50%) |
+| Mateo Gomez | 13 | 48% | 21 d | 93% | **44** | No aprueba | Cumplimiento 48% (mín. 50%) |
 
 > Para aprobar el IC: **2 sesiones por semana** sostenidas, sin pausas mayores a **10 días** y con actividad en las **últimas 2 semanas**. Se excluyen merges, bots y al docente. Zona horaria UTC-3.
 
@@ -51,17 +50,13 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Un resumen numérico (0-100) que combina todas las señales y métricas del análisis, con topes duros por duplicación.
 - **Por qué importa:** Ordena y prioriza la revisión: un índice bajo indica varias señales que conviene mirar juntas.
-- **Tu resultado:** índice **50/100** _(mínimo 50)_
+- **Tu resultado:** índice **100/100** _(mínimo 50)_
 
-### 2. Duplicación (DRY) (duplicacion) — A REVISAR
+### 2. Duplicación (DRY) (duplicacion) — OK
 
 - **Qué mide:** Porcentaje de bloques de código repetidos (similitud) en el repositorio.
 - **Por qué importa:** Cada copia se mantiene por separado: un arreglo hay que repetirlo y los defectos se multiplican.
-- **Tu resultado:** **16.6%** de duplicación _(máximo 15%)_
-- **Para investigar la causa:**
-    - ¿El trabajo se repartió por pantallas o archivos y se integró copiando y pegando bloques?
-    - ¿Qué zonas del sistema cambiaron juntas más de una vez (señal de lógica compartida)?
-    - ¿Hubo un lugar común acordado para la lógica repetida antes de empezar, o cada integrante resolvió lo suyo?
+- **Tu resultado:** **9.5%** de duplicación _(máximo 15%)_
 
 ### 3. Secretos hardcodeados (SEC) — OK
 
@@ -115,30 +110,25 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Complejidad ciclomática: cantidad de caminos posibles dentro de una función (condicionales, bucles, casos).
 - **Por qué importa:** Muchos caminos = difícil de seguir y de probar; suelen esconderse casos sin cubrir.
-- **Tu resultado:** **1** bloque(s) de complejidad alta _(máximo 5 por 1000 LOC (tenés 1438 LOC))_
+- **Tu resultado:** **20** bloque(s) de complejidad alta _(máximo 5 por 1000 LOC (tenés 4768 LOC))_
 
 ### 12. Funciones/métodos largos o con muchos parámetros (Tam) — OK
 
 - **Qué mide:** Tamaño de las funciones/métodos y cantidad de parámetros.
 - **Por qué importa:** Una función que hace varias cosas cuesta leerla, nombrarla y reutilizarla.
-- **Tu resultado:** **4** función/método(s) largos o con muchos parámetros _(máximo 10 por 1000 LOC)_
+- **Tu resultado:** **5** función/método(s) largos o con muchos parámetros _(máximo 10 por 1000 LOC)_
 
 ### 13. Acoplamiento alto (Acop) — OK
 
 - **Qué mide:** Cuánto depende una unidad de las partes internas de otra.
 - **Por qué importa:** Piezas muy enlazadas hacen que un cambio se propague y que sea difícil reemplazar partes.
-- **Tu resultado:** **0** unidad(es) con acoplamiento alto _(máximo 2 por 1000 LOC)_
+- **Tu resultado:** **2** unidad(es) con acoplamiento alto _(máximo 2 por 1000 LOC)_
 
-### 14. Cobertura de tests (Cob) — A REVISAR
+### 14. Cobertura de tests (Cob) — OK
 
 - **Qué mide:** Porcentaje de líneas de código ejecutadas por la suite de tests (cobertura real, no cantidad de archivos de test).
 - **Por qué importa:** Un test que existe pero no ejecuta el código no protege de nada: la cobertura muestra qué partes quedan sin verificar.
-- **Tu resultado:** **no medible** — sin tests en Python _(mínimo 80% de líneas)_
-- **Causa detectada:** sin tests en Python
-- **Para investigar la causa:**
-    - ¿Qué módulos o ramas del sistema nunca se ejecutan en los tests?
-    - ¿Los tests prueban el camino principal y los errores, o solo el caso feliz?
-    - ¿La suite se puede correr en CI sin base de datos ni servicios externos?
+- **Tu resultado:** **99.5%** de líneas cubiertas · fuente: artefacto: coverage/coverage-summary.json; artefacto: coverage/lcov.info; artefacto: coverage.json (frontend-vue 99.5%, backend-express 99.1%, frontend-react 99.6%, backend-fastapi 100.0%) _(mínimo 80% de líneas)_
 
 ### 15. Endpoints del backend (EP) — OK
 
@@ -150,20 +140,11 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Cantidad de vistas/componentes de pantalla del frontend.
 - **Por qué importa:** El frontend se mide por pantallas: pocas vistas sugiere poca cobertura de la interfaz pedida.
-- **Tu resultado:** **11** vista(s)/componente(s) _(mínimo 6)_
+- **Tu resultado:** **44** vista(s)/componente(s) _(mínimo 6)_
 
 ## 5. Observaciones y qué falta
 
-Criterios que hoy están en rojo y, para cada uno, una explicación breve de **cómo corregirlo** hasta alcanzar el nivel de aprobación (perfil `exigente`):
-
-| Criterio | Resultado actual | Meta | Brecha | Cómo alcanzarlo |
-|---|---|---|---|---|
-| Duplicación (DRY) (duplicacion) | **16.6%** de duplicación | máximo 15% | sobran 1.6 pts | Ubicá los bloques repetidos con `jscpd` o SonarQube, llevá la lógica común a una función o módulo compartido y hacé que todos lo usen. Cada copia eliminada baja el porcentaje; meta ≤15%. |
-| Cobertura de tests (Cob) | **no medible** — sin tests en Python | mínimo 80% de líneas | no medible: generá el artefacto o corré la suite | Agregá una suite de tests (`tests/` o `test_*.py`) **y** un `requirements.txt`/`pyproject.toml`, y corré la suite con coverage. Meta: ≥80% de líneas. |
-
-> Empezá por las señales de seguridad (**SEC**, **SQL**) y por la **duplicación**: son las que más pesan en el índice y las más rápidas de verificar a ojo. Después de corregir, volvé a correr la medición: el semáforo se recalcula sobre `main`.
-
-> **Tests (informativo):** hoy tenés **0** archivo(s) de test; la meta es **5**, pero **no** es una compuerta del semáforo. Para acercarte, agregá tests de los flujos principales (servicios y endpoints) y corré la suite con coverage.
+_Cumple **todos** los criterios del semáforo: no hay nada que arreglar para aprobar. El siguiente objetivo es sostenerlo y mejorar duplicación y diseño._
 
 ## 6. Actividad en clase y fuera de clase
 
@@ -203,16 +184,19 @@ Criterios que hoy están en rojo y, para cada uno, una explicación breve de **c
 | 2026-11-11 | **Sí** | dungeon-crawler | 2 / 2 |
 | 2026-11-13 | No | sin actividad | 0 / 0 |
 
-**Fuera de clase:** 2 fecha(s) con actividad · 6 commits · 4 merges
+**Fuera de clase:** 5 fecha(s) con actividad · 22 commits · 8 merges
 
 | Fecha | Repositorios | Commits / merges |
 |---|---|--:|
 | 2026-11-10 | dungeon-crawler | 4 / 4 |
 | 2026-11-12 | dungeon-crawler | 2 / 0 |
+| 2026-11-14 | dungeon-crawler | 3 / 1 |
+| 2026-11-15 | dungeon-crawler | 13 / 2 |
+| 2026-11-16 | dungeon-crawler | 0 / 1 |
 
 ## 7. Anexo: dónde mirar
 
-Archivos donde el análisis encontró cada señal en rojo (sin número de línea, a propósito):
+_No hay criterios en rojo con archivos asociados._
 
 ---
 _Informe generado por la cátedra. Los umbrales corresponden al perfil `exigente`. Ante dudas, revisá el archivo señalado y el criterio en `CRITERIOS-CALIDAD.md`._
