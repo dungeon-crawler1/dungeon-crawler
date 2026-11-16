@@ -15,7 +15,7 @@ describe('apiService', () => {
 
     expect(result).toEqual({ status: 'ok' });
     expect(fetchMock).toHaveBeenCalledWith(
-      'http://localhost:3000/api/test',
+      '/api/test',
       expect.objectContaining({
         headers: expect.objectContaining({ Authorization: 'Bearer token-abc' }),
       }),

@@ -2,7 +2,21 @@
    TEMA MEDIEVAL DE MAZMORRA — REACT
    Fondo de piedra, tipografía de época y componentes de bronce/sangre.
    ============================================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap');
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/cinzel-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'MedievalSharp';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/medievalsharp-latin.woff2') format('woff2');
+}
 
 :root {
   --ink: #0d0b09;

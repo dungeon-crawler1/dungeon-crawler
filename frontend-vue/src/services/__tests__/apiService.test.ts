@@ -29,7 +29,7 @@ describe('apiService.request', () => {
 
     expect(result).toEqual({ status: 'ok' });
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('http://localhost:3000/api/users/profile');
+    expect(url).toBe('/api/users/profile');
     expect(init.method).toBe('GET');
     expect(init.headers).toEqual({ 'Content-Type': 'application/json' });
   });

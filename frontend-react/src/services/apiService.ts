@@ -5,7 +5,7 @@
 import { AuthResponse } from '../types/auth';
 
 // Lectura de la variable de entorno centralizada con respaldo por defecto
-const API_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL: string = import.meta.env.VITE_API_URL || '/api';
 
 /**
  * Función genérica para la ejecución de peticiones HTTP con inyección automática de token JWT.
