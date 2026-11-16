@@ -3,6 +3,46 @@
 > Esta guía asume que el proyecto se ejecuta en una PC “anfitriona” y que las demás PCs
 > (Kubuntu o Windows 10) sólo necesitan un navegador.
 
+## 0. Ruta rápida: demo completa con un solo comando
+
+Si sólo querés levantar todo para mostrar (sin instalar Node en la máquina anfitriona), usá el
+compose de demo. Compila React y Vue, los sirve con Nginx y proxea `/api` al backend Express.
+PostgreSQL y los backends quedan en la red interna de Docker.
+
+```bash
+git clone git@github.com:dungeon-crawler1/dungeon-crawler.git
+cd dungeon-crawler
+
+# Opcional: si no existe .env, se usan credenciales de demo.
+cp .env.example .env
+
+docker compose -f docker-compose.demo.yml up -d --build
+```
+
+Cuando termine:
+
+| Aplicación | URL local | URL desde otra PC de la LAN |
+|---|---|---|
+| React | http://localhost:8080 | `http://<IP_DEL_HOST>:8080` |
+| Vue | http://localhost:8081 | `http://<IP_DEL_HOST>:8081` |
+
+Comandos útiles:
+
+```bash
+docker compose -f docker-compose.demo.yml ps        # estado y salud
+docker compose -f docker-compose.demo.yml logs -f   # logs en vivo
+docker compose -f docker-compose.demo.yml down       # apagar (conserva datos)
+docker compose -f docker-compose.demo.yml down -v    # apagar y borrar datos
+```
+
+- Sólo se publican **8080** y **8081**. Cambialos con `DEMO_REACT_PORT` y `DEMO_VUE_PORT`.
+- No se publican PostgreSQL (5432) ni los backends (3000/8000).
+- Para permitir el acceso desde otras PCs, abrí 8080/8081 en el firewall del host.
+- Si cambiás código, volvé a ejecutar el mismo `up -d --build`.
+
+El resto de la guía explica la alternativa de desarrollo (Vite + Node), los escenarios de red y
+el diagnóstico de problemas.
+
 ## 1. Decisión de red: leé esto primero
 
 Hay dos situaciones distintas:
@@ -13,7 +53,7 @@ Hay dos situaciones distintas:
 | **El lugar SÍ tiene internet** | Sí | Túnel (Cloudflare/ngrok) o deploy en la nube. |
 
 La app ya está preparada para funcionar en **LAN sin internet**:
-- Los frontends usan `/api` (misma origen) y Vite hace proxy al backend.
+- Los frontends usan `/api` (misma origen) y **Nginx** (demo) o **Vite** (desarrollo) hacen proxy al backend.
 - Los backends escuchan en `0.0.0.0`.
 - Las fuentes medievales están **self-hosted** (no dependen de Google Fonts).
 - No hace falta `VITE_API_URL`.
@@ -21,6 +61,9 @@ La app ya está preparada para funcionar en **LAN sin internet**:
 ## 2. Escenario A — Sin internet: misma red/hotspot (recomendado)
 
 ### 2.1 Preparar la PC anfitriona (esta PC)
+
+> Si usás el compose de demo de la sección 0, saltá directamente al paso 2.2. Los puertos a
+> abrir son **8080** y **8081**, no 5173/5174.
 
 1. Verificá que exista `.env` en la raíz (no se versiona):
    ```bash
@@ -80,24 +123,25 @@ Elegí una de estas:
 
 En Kubuntu o Windows 10, sólo abrí el navegador:
 
-- React: `http://<IP_DEL_HOST>:5173`
-- Vue: `http://<IP_DEL_HOST>:5174`
+- **Con el compose de demo:** React `http://<IP_DEL_HOST>:8080`, Vue `http://<IP_DEL_HOST>:8081`.
+- **Con Vite en desarrollo:** React `http://<IP_DEL_HOST>:5173`, Vue `http://<IP_DEL_HOST>:5174`.
 
-Ejemplo con la IP actual: `http://192.168.1.146:5173`.
+Ejemplo con la IP actual: `http://192.168.1.146:8080`.
 
 No instales Node, Docker ni nada en las PCs que sólo miran.
 
 ## 3. Escenario B — Con internet y otra red: túnel
 
-El frontend y la API comparten origen (`/api`), así que **un solo túnel al puerto 5173**
-expone toda la aplicación React. Para Vue, otro túnel al 5174.
+El frontend y la API comparten origen (`/api`), así que **un solo túnel** expone toda la
+aplicación: al puerto **8080** si usás el compose de demo, o al **5173** si usás Vite en
+desarrollo. Para Vue, repetí con el otro puerto (8081 o 5174).
 
 ### Cloudflare Tunnel rápido (URL temporal)
 
 ```bash
 # instalar cloudflared en la PC anfitriona
 # https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
-cloudflared tunnel --url http://localhost:5173
+cloudflared tunnel --url http://localhost:8080   # compose demo (o 5173 con Vite)
 ```
 
 Te devuelve una URL `https://algo.trycloudflare.com`. Esa URL funciona desde cualquier red.
@@ -124,59 +168,69 @@ sudo usermod -aG docker $USER   # cerrar sesión y volver a entrar
 
 git clone git@github.com:dungeon-crawler1/dungeon-crawler.git
 cd dungeon-crawler
-cp .env.example .env
-# editar .env
-docker compose up -d --build
+cp .env.example .env            # opcional: hay defaults de demo
 
-# Frontends (Node 20+)
+# Demo completa (base + backends + frontends con Nginx)
+docker compose -f docker-compose.demo.yml up -d --build
+```
+
+Abrí `http://localhost:8080` (React) y `http://localhost:8081` (Vue).
+
+<details>
+<summary>Alternativa de desarrollo con Vite (requiere Node 20+)</summary>
+
+```bash
+docker compose up -d --build
 cd frontend-react && npm ci && npm run dev -- --host 0.0.0.0 --port 5173
 cd ../frontend-vue && npm ci && npm run dev -- --host 0.0.0.0 --port 5174
 ```
 
+</details>
+
 ### Windows 10
 
-1. Instalá **Docker Desktop** (WSL2), **Node.js 20** y **Git**.
+1. Instalá **Docker Desktop** (WSL2) y **Git**. Node 20 sólo hace falta para la alternativa de
+   desarrollo con Vite.
 2. En PowerShell:
    ```powershell
    git clone git@github.com:dungeon-crawler1/dungeon-crawler.git
    cd dungeon-crawler
    copy .env.example .env
    notepad .env
-   docker compose up -d --build
 
-   cd frontend-react
-   npm ci
-   npm run dev -- --host 0.0.0.0 --port 5173
-
-   cd ..\frontend-vue
-   npm ci
-   npm run dev -- --host 0.0.0.0 --port 5174
+   # Demo completa (base + backends + frontends con Nginx)
+   docker compose -f docker-compose.demo.yml up -d --build
    ```
-3. Permitir 5173, 5174 y 3000 en el Firewall de Windows para redes privadas.
+3. Permitir **8080** y **8081** en el Firewall de Windows para redes privadas. Con la variante
+   Vite, permitir 5173, 5174 y 3000.
 
-El `docker-compose.yml` actual levanta base y backends; los frontends se corren con Node.
-Una mejora pendiente es agregar los frontends al compose con Nginx.
+El `docker-compose.yml` base levanta sólo base y backends. El `docker-compose.demo.yml` agrega los
+dos frontends compilados y servidos por Nginx, con `/api` proxeado al backend Express y sin
+publicar PostgreSQL ni los backends.
 
 ## 5. Problemas frecuentes
 
 | Síntoma | Causa / solución |
 |---|---|
-| La página carga pero el login falla | El frontend no está usando `/api` o el proxy no llega al backend. Verificá `http://<host>:5173/api/game/leaderboard`. |
+| La página carga pero el login falla | El frontend no está usando `/api` o el proxy no llega al backend. Verificá `http://<host>:8080/api/game/leaderboard` (demo) o `:5173` (Vite). |
 | `ERR_CONNECTION_REFUSED` desde otra PC | Firewall del host, IP equivocada o PCs en redes distintas. |
-| Funciona en localhost pero no por IP | Vite debe arrancar con `--host 0.0.0.0` (ya está configurado). |
+| Funciona en localhost pero no por IP | En demo, el puerto debe publicarse en `0.0.0.0`; en Vite, arrancar con `--host 0.0.0.0`. |
+| El contenedor de un frontend no arranca | Mirá `docker compose -f docker-compose.demo.yml logs frontend-react`; suele ser un fallo del build. |
+| Cambié código y no se refleja | El demo sirve archivos compilados: corré `up -d --build` de nuevo. |
 | Se ve la UI sin fuentes medievales | Las fuentes son locales; si no cargan, revisá que `src/styles/fonts/*.woff2` esté en el clon. |
-| CORS bloqueado usando FastAPI directo | Definí `CORS_ORIGINS` o usá el proxy `/api` de Vite. |
+| CORS bloqueado usando FastAPI directo | Definí `CORS_ORIGINS` o usá el proxy `/api` de Nginx/Vite. |
 | Pantalla en blanco tras un cambio | `Ctrl+Shift+R` para saltar caché. |
 | Se pierde la sesión | El JWT está en `localStorage`; no borres datos del navegador. |
 
 ## 6. Checklist de demo
 
-- [ ] `.env` creado y con `JWT_SECRET`.
+- [ ] `.env` creado y con `JWT_SECRET` (o defaults de demo aceptados).
 - [ ] Base inicializada con `init.sql`.
-- [ ] Backends en 3000/8000 y PostgreSQL en 5432.
-- [ ] Frontends en 5173/5174 con `--host 0.0.0.0`.
-- [ ] `/api` responde a través de 5173.
-- [ ] Firewall permite 3000/5173/5174.
+- [ ] `docker compose -f docker-compose.demo.yml up -d --build` terminó sin errores.
+- [ ] `docker compose -f docker-compose.demo.yml ps` muestra todo `healthy`/`running`.
+- [ ] React responde en `http://<IP>:8080` y Vue en `http://<IP>:8081`.
+- [ ] `/api` responde a través del frontend (`:8080/api/game/leaderboard`).
+- [ ] Firewall permite 8080/8081.
 - [ ] PCs en la misma red/hotspot (sin internet) o túnel activo (con internet).
 - [ ] Cuenta con partidas para “Mis Partidas” y el modal.
 - [ ] Probado desde otra PC antes de presentar.

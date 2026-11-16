@@ -19,6 +19,25 @@ Cada servicio tiene su propia suite y genera su artefacto de cobertura. Todas co
 | React | `cd frontend-react && npm ci && npm run test:coverage` | `frontend-react/coverage/coverage-summary.json` |
 | Vue | `cd frontend-vue && npm ci && npm run test:coverage` | `frontend-vue/coverage/coverage-summary.json` |
 
+## Ejecución rápida (demo)
+
+Un solo comando levanta PostgreSQL, los dos backends y los dos frontends compilados y servidos por
+Nginx (con `/api` proxeado al backend Express):
+
+```bash
+cp .env.example .env   # opcional: el compose de demo trae defaults
+docker compose -f docker-compose.demo.yml up -d --build
+```
+
+| Aplicación | URL |
+| :--- | :--- |
+| React | http://localhost:8080 |
+| Vue | http://localhost:8081 |
+
+Sólo se publican 8080 y 8081; PostgreSQL y los backends quedan en la red interna. Para acceder
+desde otra PC de la LAN usá `http://<IP-DEL-HOST>:8080`. Guía completa (sin internet, hotspot,
+túnel y Windows/Kubuntu) en [`docs/DEMO.md`](docs/DEMO.md).
+
 ## Título del Proyecto y Resumen General
 - Nombre del Proyecto: Aplicación Web de Videojuego Roguelike Interactivo por Turnos con Eventos Procedurales.
 - Resumen: Aplicación web interactiva donde el jugador selecciona una clase de personaje e ingresa a una mazmorra procedural con bifurcación de caminos (2-3 puertas). Cada habitación presenta un evento aleatorio (combates, mercaderes, fuentes de deseos, estatuas sagradas, salas de ayuda, salas de tesoros o jefes). Al finalizar cada partida (por derrota o retiro), los resultados y las estadísticas detalladas paso a paso se registran en una base de datos centralizada, alimentando una tabla de clasificación global (Leaderboard) y un historial de usuario.
