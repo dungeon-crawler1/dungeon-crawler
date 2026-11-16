@@ -38,7 +38,9 @@ docker compose -f docker-compose.demo.yml down -v    # apagar y borrar datos
 - Sólo se publican **8080** y **8081**. Cambialos con `DEMO_REACT_PORT` y `DEMO_VUE_PORT`.
 - No se publican PostgreSQL (5432) ni los backends (3000/8000).
 - Para permitir el acceso desde otras PCs, abrí 8080/8081 en el firewall del host.
+- Los contenedores usan `restart: unless-stopped`: si Docker está habilitado, vuelven solos tras reiniciar la PC.
 - Si cambiás código, volvé a ejecutar el mismo `up -d --build`.
+- Para acceder **desde cualquier red con internet**, mirá la sección 3 (túnel de Cloudflare).
 
 El resto de la guía explica la alternativa de desarrollo (Vite + Node), los escenarios de red y
 el diagnóstico de problemas.
@@ -139,16 +141,25 @@ desarrollo. Para Vue, repetí con el otro puerto (8081 o 5174).
 ### Cloudflare Tunnel rápido (URL temporal)
 
 ```bash
-# instalar cloudflared en la PC anfitriona
+# instalar cloudflared en la PC anfitriona (una vez)
 # https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
-cloudflared tunnel --url http://localhost:8080   # compose demo (o 5173 con Vite)
+
+# Demo con Docker (recomendado)
+cloudflared tunnel --url http://localhost:8080   # React
+cloudflared tunnel --url http://localhost:8081   # Vue
+
+# Alternativa con Vite en desarrollo
+cloudflared tunnel --url http://localhost:5173
+cloudflared tunnel --url http://localhost:5174
 ```
 
-Te devuelve una URL `https://algo.trycloudflare.com`. Esa URL funciona desde cualquier red.
-Para una URL fija hace falta una cuenta de Cloudflare y un túnel nombrado.
+Cada comando devuelve una URL `https://algo.trycloudflare.com`. Esa URL funciona desde cualquier
+red con internet, sin abrir puertos en el router ni tener IP pública. La URL **cambia cada vez que
+reiniciás el túnel**; para una URL fija hace falta una cuenta de Cloudflare, un dominio propio y un
+túnel nombrado.
 
-> El túnel requiere internet en la PC anfitriona **y** en las PCs que miran. Si el lugar no
-> tiene internet, usá el Escenario A.
+> Requisitos: la PC anfitriona debe quedar encendida y con internet mientras dure la demo. Si el
+> lugar no tiene internet, usá el Escenario A (misma LAN/hotspot).
 
 ### Deploy alternativo
 
