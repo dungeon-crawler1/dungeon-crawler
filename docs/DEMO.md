@@ -161,6 +161,10 @@ túnel nombrado.
 > Requisitos: la PC anfitriona debe quedar encendida y con internet mientras dure la demo. Si el
 > lugar no tiene internet, usá el Escenario A (misma LAN/hotspot).
 
+> **Importante:** si la PC se suspende, el *quick tunnel* puede quedar inválido y la URL deja de
+> funcionar aunque el proceso siga vivo. Desactivá la suspensión automática (inactividad y tapa)
+> antes de la demo, o usá un túnel nombrado/Tailscale Funnel para una URL estable.
+
 ### Deploy alternativo
 
 - Frontends: Vercel/Netlify (build estático).
