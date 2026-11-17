@@ -49,12 +49,12 @@ const MEDIUM_GROUPS: Array<{ enemy: Enemy; min: number; max: number }> = [
 const relic = (id: string, name: string, effectSummary: string, description: string) => ({ id, name, effectSummary, description });
 
 const BOSSES: Enemy[] = [
-  { name: 'Dragón Ancestral', hp: 400, maxHp: 400, attack: 119, goldReward: 600, isBoss: true, ability: 'FIRE', damageReduction: 0.3, bossRelic: relic('boss-dragon', 'Capa de Piel de Dragón', '-50 % Daño recibido', 'Disminuye el daño recibido un 50 %.') },
-  { name: 'Emperador Caído', hp: 350, maxHp: 350, attack: 136, goldReward: 700, isBoss: true, ability: 'DOUBLE_ATTACK', evasionChance: 0.35, bossRelic: relic('boss-emp', 'Espada del Emperador', '65 % de golpear 2 veces', 'Al atacar hay un 65 % de probabilidades de golpear 2 veces.') },
-  { name: 'Criatura Mutante Gigante', hp: 450, maxHp: 450, attack: 111, goldReward: 550, isBoss: true, ability: 'ACID', bossRelic: relic('boss-acid', 'Viseras Ácidas', '+50 % Daño total', 'Aumenta el daño infligido un 50 %.') },
-  { name: 'Robot Enorme Descontrolado', hp: 550, maxHp: 550, attack: 85, goldReward: 650, isBoss: true, ability: 'CHARGE', bossRelic: relic('boss-shock', 'Dispositivo de Shock', '40 % de stunear', 'Al golpear hay un 40 % de probabilidades de stunear al rival un turno.') },
-  { name: 'Titán Esquelético', hp: 500, maxHp: 500, attack: 102, goldReward: 800, isBoss: true, ability: 'ROCKS', bossRelic: relic('boss-hammer', 'Mazo de Hueso de Titán', 'Rocas cada 3 turnos', 'Cada 3 turnos permite un ataque extra con rocas de 30 de daño 2-4 veces.') },
-  { name: 'Drácula', hp: 400, maxHp: 400, attack: 111, goldReward: 500, isBoss: true, ability: 'DRAIN', bossRelic: relic('boss-drac', 'Vampirismo Completo', 'Roba vida al eliminar', 'Al eliminar un enemigo suma su vida restante (100 % en el turno 1, 50 % en el 2, 25 % en el 3…).') },
+  { name: 'Dragón Ancestral', hp: 400, maxHp: 400, attack: 67, goldReward: 600, isBoss: true, ability: 'FIRE', damageReduction: 0.3, bossRelic: relic('boss-dragon', 'Capa de Piel de Dragón', '-50 % Daño recibido', 'Disminuye el daño recibido un 50 %.') },
+  { name: 'Emperador Caído', hp: 350, maxHp: 350, attack: 74, goldReward: 700, isBoss: true, ability: 'DOUBLE_ATTACK', evasionChance: 0.35, bossRelic: relic('boss-emp', 'Espada del Emperador', '65 % de golpear 2 veces', 'Al atacar hay un 65 % de probabilidades de golpear 2 veces.') },
+  { name: 'Criatura Mutante Gigante', hp: 450, maxHp: 450, attack: 62, goldReward: 550, isBoss: true, ability: 'ACID', bossRelic: relic('boss-acid', 'Viseras Ácidas', '+50 % Daño total', 'Aumenta el daño infligido un 50 %.') },
+  { name: 'Robot Enorme Descontrolado', hp: 550, maxHp: 550, attack: 50, goldReward: 650, isBoss: true, ability: 'CHARGE', bossRelic: relic('boss-shock', 'Dispositivo de Shock', '40 % de stunear', 'Al golpear hay un 40 % de probabilidades de stunear al rival un turno.') },
+  { name: 'Titán Esquelético', hp: 500, maxHp: 500, attack: 58, goldReward: 800, isBoss: true, ability: 'ROCKS', bossRelic: relic('boss-hammer', 'Mazo de Hueso de Titán', 'Rocas cada 3 turnos', 'Cada 3 turnos permite un ataque extra con rocas de 30 de daño 2-4 veces.') },
+  { name: 'Drácula', hp: 400, maxHp: 400, attack: 64, goldReward: 500, isBoss: true, ability: 'DRAIN', bossRelic: relic('boss-drac', 'Vampirismo Completo', 'Roba vida al eliminar', 'Al eliminar un enemigo suma su vida restante (100 % en el turno 1, 50 % en el 2, 25 % en el 3…).') },
 ];
 
 function randInt(min: number, max: number): number {
@@ -69,12 +69,12 @@ function pick<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-// Multiplicador global: +20 % tras el primer jefe y +20 % cada 10 salas si ya cayeron todos.
-export function enemyStatsMultiplier(defeatedBosses: string[], score: number): number {
-  if (defeatedBosses.length === 0) return 1;
-  const allDefeated = BOSSES.every((boss) => defeatedBosses.includes(boss.name));
-  const extra = allDefeated ? Math.max(0, Math.floor((score - 20) / 10)) * 0.2 : 0;
-  return 1.2 + extra;
+// Escalado: desde la sala 25, los enemigos comunes suben 20 % cada 10 salas.
+// Los jefes no usan ese escalado: suben 10 % por cada jefe que ya haya caído.
+export function enemyStatsMultiplier(defeatedBosses: string[], roomNumber: number, isBoss = false): number {
+  if (isBoss) return 1 + defeatedBosses.length * 0.1;
+  if (roomNumber < 25) return 1;
+  return 1 + 0.2 * (Math.floor((roomNumber - 25) / 10) + 1);
 }
 
 function scale(enemy: Enemy, multiplier: number): Enemy {
@@ -82,8 +82,8 @@ function scale(enemy: Enemy, multiplier: number): Enemy {
   return { ...enemy, hp, maxHp: Math.round(enemy.maxHp * multiplier), attack: Math.round(enemy.attack * multiplier), goldReward: Math.round(enemy.goldReward * multiplier) };
 }
 
-export function spawnEncounterForRoom(type: 'COMBAT' | 'ELITE' | 'BOSS', defeatedBosses: string[], score = 0): Enemy[] {
-  const multiplier = enemyStatsMultiplier(defeatedBosses, score);
+export function spawnEncounterForRoom(type: 'COMBAT' | 'ELITE' | 'BOSS', defeatedBosses: string[], roomNumber = 0): Enemy[] {
+  const multiplier = enemyStatsMultiplier(defeatedBosses, roomNumber, type === 'BOSS');
   const goldFactor = type === 'COMBAT' ? 1.35 : type === 'ELITE' ? 1.2 : 1;
   const prepare = (enemy: Enemy): Enemy => {
     const scaled = scale(enemy, multiplier);
@@ -151,8 +151,9 @@ export function generateProceduralDoors(roomsCleared: number, defeatedBosses: st
     chosenDoors.push(doorData);
   }
 
+  const nextRoom = roomsCleared + 1;
   const remainingBosses = BOSSES.filter((boss) => !defeatedBosses.includes(boss.name));
-  if (roomsCleared >= 20 && roomsCleared % 10 === 0 && remainingBosses.length > 0) {
+  if (nextRoom >= 20 && nextRoom % 10 === 0 && remainingBosses.length > 0) {
     chosenDoors[0] = { type: 'BOSS' as RoomEventType, icon: '👑', title: 'Cámara del Jefe', description: 'Un jefe legendario custodia esta sala.' };
   }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { enemyTurn, heroAttack } from '../../../../shared/game/combatEngine';
 import { applyVictoryRewards } from '../../../../shared/game/combatLogic';
-import { spawnEncounterForRoom } from '../../../../shared/game/gameContent';
+import { enemyStatsMultiplier, spawnEncounterForRoom } from '../../../../shared/game/gameContent';
 import { makeEnemy, makeHero } from '../../test/fixtures';
 
 function mage(overrides = {}) {
@@ -71,11 +71,11 @@ describe('balance de recompensas', () => {
     expect(spawnEncounterForRoom('BOSS', [], 0)[0].goldReward).toBe(600);
   });
 
-  it('los jefes tienen el daño reducido un 15 %', () => {
+  it('los jefes tienen un daño balanceado', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const boss = spawnEncounterForRoom('BOSS', [], 0)[0];
     expect(boss.name).toBe('Dragón Ancestral');
-    expect(boss.attack).toBe(119);
+    expect(boss.attack).toBe(67);
   });
 });
 
@@ -128,5 +128,60 @@ describe('efectos al esquivar o bloquear', () => {
     const result = heroAttack(hero, [enemy], 0);
 
     expect(result.enemies[0].statuses?.stunTurns ?? 0).toBe(0);
+  });
+});
+
+
+describe('balance final de jefes', () => {
+  it('un golpe de jefe no mata al Mago de una vez', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const hero = makeHero({ heroClass: 'MAGO', hp: 80, maxHp: 80, damageReduction: 0 });
+    const boss = makeEnemy({ name: 'Emperador', isBoss: true, attack: 74, hp: 350, maxHp: 350 });
+    const result = enemyTurn(hero, [boss]);
+    expect(result.hero.hp).toBeGreaterThan(0);
+  });
+
+  it('las rocas del titán no borran al jugador de un golpe', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const titan = makeEnemy({ name: 'Titán', isBoss: true, ability: 'ROCKS', attack: 34, hp: 500, maxHp: 500, specialCooldown: 0 });
+    const result = enemyTurn(mage(), [titan]);
+    expect(result.hero.hp).toBeGreaterThan(0);
+    expect(result.hero.hp).toBeLessThan(500);
+  });
+});
+
+
+describe('derrota del jugador', () => {
+  it('marca heroDead cuando el golpe supera la vida restante', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const hero = makeHero({ heroClass: 'MAGO', hp: 20, maxHp: 80, damageReduction: 0 });
+    const enemy = makeEnemy({ attack: 100, isElite: true });
+    const result = enemyTurn(hero, [enemy]);
+    expect(result.heroDead).toBe(true);
+    expect(result.hero.hp).toBe(0);
+  });
+});
+
+
+describe('escalado desde la sala 25', () => {
+  it('los enemigos comunes suben 20 % cada 10 salas', () => {
+    expect(enemyStatsMultiplier([], 24)).toBe(1);
+    expect(enemyStatsMultiplier([], 25)).toBeCloseTo(1.2);
+    expect(enemyStatsMultiplier([], 35)).toBeCloseTo(1.4);
+    expect(enemyStatsMultiplier([], 45)).toBeCloseTo(1.6);
+  });
+
+  it('los jefes suben 10 % por cada jefe derrotado y no por salas', () => {
+    expect(enemyStatsMultiplier([], 25, true)).toBe(1);
+    expect(enemyStatsMultiplier(['Dragón Ancestral'], 25, true)).toBeCloseTo(1.1);
+    expect(enemyStatsMultiplier(['Dragón Ancestral'], 35, true)).toBeCloseTo(1.1);
+    expect(enemyStatsMultiplier(['Dragón Ancestral', 'Emperador Caído'], 35, true)).toBeCloseTo(1.2);
+  });
+
+  it('aplica el escalado a los enemigos generados en la sala 25', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const normal = spawnEncounterForRoom('COMBAT', [], 25)[0];
+    expect(normal.attack).toBe(18);
+    expect(normal.hp).toBe(60);
   });
 });

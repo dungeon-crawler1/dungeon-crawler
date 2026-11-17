@@ -1,0 +1,18 @@
+# Contexto de build de los frontends (raíz del repo).
+# Se excluye lo que no hace falta para compilar React/Vue.
+.git
+.env
+*.md
+docs
+backend-express
+backend-fastapi
+migrations
+init.sql
+
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/__pycache__
+**/.pytest_cache
+**/.vitest

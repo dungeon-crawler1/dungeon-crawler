@@ -86,14 +86,13 @@ describe('useGameEngine', () => {
     expect(requestMock).toHaveBeenCalledWith('/game/run/42/turn', expect.anything());
   });
 
-  it('finaliza la partida con derrota cuando el héroe cae', async () => {
+  it('sobrevive al primer golpe de un jefe con el daño balanceado', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
     const result = await setup('MAGO');
     act(() => result.current.chooseDoor(makeDoor('BOSS')));
     await act(async () => { await result.current.attackEnemy(); });
-    expect(result.current.state.isFinished).toBe(true);
-    expect(result.current.state.finishReason).toBe('DERROTA');
-    expect(result.current.state.logs.join(' ')).toContain('Caíste');
+    expect(result.current.state.isFinished).toBe(false);
+    expect(result.current.state.hero?.hp).toBeGreaterThan(0);
   });
 
   it('activa el escudo arcano consumiendo maná', async () => {

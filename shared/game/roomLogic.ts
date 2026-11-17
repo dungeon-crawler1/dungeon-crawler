@@ -52,9 +52,9 @@ const HELP_SUMMARIES: Record<HelpType, string> = {
 };
 
 const STATUE_SUMMARIES: Record<HeroClassId, string> = {
-  CABALLERO: 'Estatua Real (Caballero): -40 % daño recibido',
+  CABALLERO: 'Estatua Real (Caballero): +40 % reducción de daño',
   BARBARO: 'Estatua Barbárica (Bárbaro): +40 % daño',
-  PICARO: 'Estatua Escurridiza (Pícaro): 30 % evasión y +40 % monedas',
+  PICARO: 'Estatua Escurridiza (Pícaro): +30 % evasión y +40 % monedas',
   MAGO: 'Estatua Mágica (Mago): hechizos a mitad de costo',
 };
 
@@ -112,7 +112,7 @@ interface BuildContext {
 }
 
 function buildCombat(type: ResolvedType, ctx: BuildContext): Encounter {
-  const enemies = spawnEncounterForRoom(type as 'COMBAT' | 'ELITE' | 'BOSS', ctx.hero.defeatedBosses, ctx.score);
+  const enemies = spawnEncounterForRoom(type as 'COMBAT' | 'ELITE' | 'BOSS', ctx.hero.defeatedBosses, ctx.score + 1);
   const names = enemies.map((enemy) => `${enemy.name} (${enemy.hp} HP)`).join(', ');
   return { inCombat: true, enemy: enemies[0], enemies, merchantItems: [], isLuxuryMerchant: false, currentEvent: null, log: `${ctx.note}Entraste a ${ctx.door.title}: ${names}.` };
 }
@@ -244,9 +244,9 @@ function applyStatue(hero: Hero, event: GameEvent): { hero: Hero; message: strin
   const statues = event.statues ?? [];
   if (!statues.includes(hero.heroClass)) return { hero, message: '🗿 No hay una estatua para tu clase en esta sala.' };
   const next = { ...hero, statueUsed: true };
-  if (next.heroClass === 'CABALLERO') { next.damageReduction = Math.max(next.damageReduction, 0.4); next.statueBonus = 'Real: -40 % daño recibido'; return { hero: next, message: '🗿 Estatua Real activada: reducción de daño al 40 %.' }; }
-  if (next.heroClass === 'BARBARO') { next.percentAttackBonus += 0.4; next.statueBonus = 'Barbárica: +40 % daño'; return { hero: recalculateHeroStats(next), message: '🗿 Estatua Barbárica activada: +40 % de daño permanente.' }; }
-  if (next.heroClass === 'PICARO') { next.evasionChance = 0.3; next.goldMultiplier = 1.4; next.statueBonus = 'Escurridiza: 30 % evasión y +40 % monedas'; return { hero: next, message: '🗿 Estatua Escurridiza activada: 30 % evasión y +40 % monedas.' }; }
+  if (next.heroClass === 'CABALLERO') { next.damageReduction = Math.min(0.8, next.damageReduction + 0.4); next.statueBonus = 'Real: +40 % reducción de daño'; return { hero: next, message: '🗿 Estatua Real activada: suma +40 % de reducción de daño (máx. 80 %).' }; }
+  if (next.heroClass === 'BARBARO') { next.percentAttackBonus += 0.4; next.statueBonus = 'Barbárica: +40 % daño'; return { hero: recalculateHeroStats(next), message: '🗿 Estatua Barbárica activada: +40 % de daño acumulable.' }; }
+  if (next.heroClass === 'PICARO') { next.evasionChance = Math.min(0.8, next.evasionChance + 0.3); next.goldMultiplier += 0.4; next.statueBonus = 'Escurridiza: +30 % evasión y +40 % monedas'; return { hero: next, message: '🗿 Estatua Escurridiza activada: suma +30 % evasión y +40 % monedas.' }; }
   next.spellCostMultiplier = 0.5;
   next.statueBonus = 'Mágica: hechizos a mitad de costo';
   return { hero: next, message: '🗿 Estatua Mágica activada: el costo de todos los hechizos se reduce a la mitad.' };

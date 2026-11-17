@@ -69,3 +69,9 @@ def test_profile_propio(client, auth_headers):
 def test_profile_con_token_invalido(client):
     response = client.get("/api/users/profile", headers={"Authorization": "Bearer roto"})
     assert response.status_code == 401
+
+
+def test_cors_permite_origen_cruzado(client):
+    response = client.get("/api/game/leaderboard", headers={"Origin": "http://192.168.1.50:5173"})
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] in ("*", "http://192.168.1.50:5173")

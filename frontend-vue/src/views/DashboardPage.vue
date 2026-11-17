@@ -1,33 +1,19 @@
 <template>
-  <div style="max-width: 980px; margin: 40px auto; padding: 20px;">
-    <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
-      <h1>Panel Principal - Roguelike Game (Vue)</h1>
-      <button @click="handleLogout" style="padding: 8px 16px; background: #dc3545; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
-        Cerrar Sesión
-      </button>
-    </header>
-    <main style="margin-top: 20px;">
-      <h2>Bienvenido al Calabozo</h2>
-      <p>Usuario autenticado: <strong>{{ userEmail }}</strong></p>
-      <div style="padding: 15px; background: #e9ecef; border-radius: 6px; margin-top: 20px;">
-        <h3>Estado del Frontend Vue 3</h3>
-        <ul>
-          <li>Autenticación con JWT + Pinia Store: Configurada y persistida</li>
-          <li>Enrutamiento Protegido: Activo en /dashboard y /game vía Vue Router Guard</li>
-          <li>Separación de Capas: Peticiones HTTP aisladas en /services</li>
-        </ul>
+  <div class="dungeon-dashboard">
+    <header class="dungeon-header">
+      <h1>⚔ Panel del Aventurero (Vue)</h1>
+      <div class="dungeon-actions">
+        <button class="dungeon-button" @click="handleLogout">Cerrar Sesión</button>
       </div>
-
-      <div style="padding: 20px; background: #222; color: #fff; border-radius: 8px; margin-top: 20px; text-align: center;">
-        <h3>⚔️ Mazmorra Procedural</h3>
-        <p style="font-size: 0.9em; color: #ccc;">
+    </header>
+    <main>
+      <div class="dungeon-panel" style="padding: 24px; text-align: center;">
+        <h2 style="margin-top: 0;">Bienvenido al Calabozo</h2>
+        <p>Usuario autenticado: <strong>{{ userEmail }}</strong></p>
+        <p style="font-size: 0.9em; color: #c9b994;">
           Elegí tu clase, cruzá las puertas y sobreviví a los combates por turnos.
         </p>
-        <button
-          class="enter-game"
-          @click="goToGame"
-          style="margin-top: 10px; padding: 10px 18px; background: #28a745; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;"
-        >
+        <button class="enter-game dungeon-button primary" style="margin-top: 8px; font-size: 1.05rem;" @click="goToGame">
           Entrar a la Mazmorra
         </button>
       </div>

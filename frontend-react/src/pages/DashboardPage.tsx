@@ -11,21 +11,21 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '980px', margin: '40px auto', padding: '20px' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ddd', paddingBottom: '10px' }}>
-        <h1>Panel Principal - Roguelike Game (React)</h1>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          Cerrar Sesión
-        </button>
+    <div className="dungeon-dashboard">
+      <header className="dungeon-header">
+        <h1>⚔ Panel del Aventurero</h1>
+        <div className="dungeon-actions">
+          <button className="dungeon-button" onClick={handleLogout}>Cerrar Sesión</button>
+        </div>
       </header>
 
-      <main style={{ marginTop: '20px' }}>
-        <h2>Bienvenido al Calabozo</h2>
-        <div style={{ margin: '30px 0', textAlign: 'center' }}>
-          <button
-            onClick={() => navigate('/game')}
-            style={{ padding: '15px 30px', fontSize: '1.2em', background: '#28a745', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
+      <main>
+        <div className="dungeon-panel" style={{ padding: '24px', textAlign: 'center' }}>
+          <h2 style={{ marginTop: 0 }}>Bienvenido al Calabozo</h2>
+          <p style={{ color: '#c9b994' }}>
+            Elegí tu clase, cruzá las puertas y sobreviví a los combates por turnos.
+          </p>
+          <button className="dungeon-button primary" style={{ marginTop: '8px', fontSize: '1.05rem' }} onClick={() => navigate('/game')}>
             ⚔️ Entrar a la Mazmorra
           </button>
         </div>

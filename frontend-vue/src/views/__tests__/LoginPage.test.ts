@@ -44,7 +44,7 @@ describe('LoginPage', () => {
   it('renderiza el formulario de inicio de sesión', () => {
     const wrapper = mountPage();
 
-    expect(wrapper.find('h2').text()).toContain('Iniciar Sesión');
+    expect(wrapper.find('h2').text()).toContain('Entrada a la Mazmorra');
     expect(wrapper.find('#vue-login-email').exists()).toBe(true);
     expect(wrapper.find('#vue-login-password').exists()).toBe(true);
     expect(wrapper.find('button').text()).toBe('Ingresar');

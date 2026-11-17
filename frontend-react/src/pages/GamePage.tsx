@@ -24,27 +24,32 @@ export const GamePage: React.FC = () => {
 
   if (!state.hero) {
     return (
-      <div style={{ maxWidth: '900px', margin: '30px auto', padding: '20px' }}>
-        {error && <div style={{ padding: '12px', marginBottom: '15px', background: '#5c1a1a', color: '#ffd6d6', borderRadius: '6px' }}>⚠️ {error}</div>}
-        <ClassSelector onSelect={selectClass} disabled={loading} />
+      <div className="dungeon-game" style={{ paddingBottom: '40px' }}>
+        <div className="dungeon-content">
+          {error && <div style={{ padding: '12px', marginBottom: '15px', background: '#5c1a1a', color: '#ffd6d6', borderRadius: '6px' }}>⚠️ {error}</div>}
+          <ClassSelector onSelect={selectClass} disabled={loading} />
+        </div>
       </div>
     );
   }
 
   if (state.isFinished) {
     return (
-      <GameSummary
-        reason={state.finishReason}
-        score={state.score}
-        gold={state.hero.gold}
-        onRestart={resetRun}
-        onGoHome={() => navigate('/dashboard')}
-      />
+      <div className="dungeon-game" style={{ paddingBottom: '40px' }}>
+        <GameSummary
+          reason={state.finishReason}
+          score={state.score}
+          gold={state.hero.gold}
+          onRestart={resetRun}
+          onGoHome={() => navigate('/dashboard')}
+        />
+      </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '30px auto', padding: '20px' }}>
+    <div className="dungeon-game" style={{ paddingBottom: '40px' }}>
+      <div className="dungeon-content">
       {state.showLeaveConfirm && (
         <LeaveConfirmModal onConfirmLeave={() => navigate('/dashboard')} onCancel={closeLeaveConfirm} />
       )}
@@ -84,6 +89,7 @@ export const GamePage: React.FC = () => {
       )}
 
       <GameLog logs={state.logs} />
+      </div>
     </div>
   );
 };

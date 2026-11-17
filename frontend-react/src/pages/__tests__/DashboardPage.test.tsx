@@ -21,7 +21,7 @@ describe('DashboardPage', () => {
   it('muestra el panel principal', () => {
     renderPage();
 
-    expect(screen.getByText('Panel Principal - Roguelike Game (React)')).toBeTruthy();
+    expect(screen.getByText('⚔ Panel del Aventurero')).toBeTruthy();
     expect(screen.getByText('Bienvenido al Calabozo')).toBeTruthy();
   });
 
