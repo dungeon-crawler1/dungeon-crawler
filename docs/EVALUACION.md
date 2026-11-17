@@ -3,7 +3,7 @@
 
 > Documento **generado automáticamente** por la cátedra de Programación III (RepoSense + análisis de calidad + constancia). **No editar a mano**: se regenera en cada evaluación.
 > Rama evaluada: `main`. Análisis **heurístico** (regex + métricas): es una criba para orientar la revisión, **no una nota**.
-> Generado: 2026-11-16.
+> Generado: 2026-11-17.
 
 ## 1. Veredicto
 
@@ -13,7 +13,7 @@
 | Índice de calidad de servicios | **100/100** (mínimo 50) |
 | Criterios cumplidos | **16/16** |
 | Aprobado (semáforo) | **SI** |
-| Código (LOC) | 4,768 |
+| Código (LOC) | 4,722 |
 | Archivos de código | 109 |
 | Tests (archivos) | 63 |
 | Cobertura de líneas | 99.5% (mínimo 80%) |
@@ -28,7 +28,7 @@
 
 | Autor | Commits | Código (LOC) | Tests (LOC) | Docs (LOC) | Días activos | % del código |
 |---|---:|---:|---:|---:|---:|---:|
-| Mateo Gomez | 29 | 5,452 | 4,799 | 531 | 13 | 100% |
+| Mateo Gomez | 36 | 5,918 | 4,867 | 802 | 14 | 100% |
 
 > _El LOC de autoría lo calcula RepoSense sobre el historial y puede diferir del LOC de código del análisis de calidad (que mira solo el estado de `main`)._
 
@@ -56,7 +56,7 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Porcentaje de bloques de código repetidos (similitud) en el repositorio.
 - **Por qué importa:** Cada copia se mantiene por separado: un arreglo hay que repetirlo y los defectos se multiplican.
-- **Tu resultado:** **9.5%** de duplicación _(máximo 15%)_
+- **Tu resultado:** **8.8%** de duplicación _(máximo 15%)_
 
 ### 3. Secretos hardcodeados (SEC) — OK
 
@@ -110,7 +110,7 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Complejidad ciclomática: cantidad de caminos posibles dentro de una función (condicionales, bucles, casos).
 - **Por qué importa:** Muchos caminos = difícil de seguir y de probar; suelen esconderse casos sin cubrir.
-- **Tu resultado:** **20** bloque(s) de complejidad alta _(máximo 5 por 1000 LOC (tenés 4768 LOC))_
+- **Tu resultado:** **20** bloque(s) de complejidad alta _(máximo 5 por 1000 LOC (tenés 4722 LOC))_
 
 ### 12. Funciones/métodos largos o con muchos parámetros (Tam) — OK
 
