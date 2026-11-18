@@ -3,7 +3,7 @@
 
 > Documento **generado automáticamente** por la cátedra de Programación III (RepoSense + análisis de calidad + constancia). **No editar a mano**: se regenera en cada evaluación.
 > Rama evaluada: `main`. Análisis **heurístico** (regex + métricas): es una criba para orientar la revisión, **no una nota**.
-> Generado: 2026-11-17.
+> Generado: 2026-11-18.
 
 ## 1. Veredicto
 
@@ -16,7 +16,7 @@
 | Código (LOC) | 4,722 |
 | Archivos de código | 109 |
 | Tests (archivos) | 63 |
-| Cobertura de líneas | 99.5% (mínimo 80%) |
+| Cobertura de líneas | 99.4% (mínimo 80%) |
 | Capas detectadas | presentacion, logica, datos, vistas, servicios, estado |
 | Pushes directos a `main` (sin PR) | 1 |
 
@@ -38,7 +38,7 @@
 
 | Alumno | Sesiones | Cumplimiento | Pausa | Recencia | IC | Nivel | Para subir de nivel |
 |---|--:|--:|--:|--:|--:|--|--|
-| Mateo Gomez | 13 | 48% | 21 d | 93% | **44** | No aprueba | Cumplimiento 48% (mín. 50%) |
+| Mateo Gomez | 13 | 47% | 21 d | 79% | **41** | No aprueba | Cumplimiento 47% (mín. 50%) |
 
 > Para aprobar el IC: **2 sesiones por semana** sostenidas, sin pausas mayores a **10 días** y con actividad en las **últimas 2 semanas**. Se excluyen merges, bots y al docente. Zona horaria UTC-3.
 
@@ -128,7 +128,7 @@ Cada aspecto indica **qué mide**, **por qué importa** y **tu resultado**. Cuan
 
 - **Qué mide:** Porcentaje de líneas de código ejecutadas por la suite de tests (cobertura real, no cantidad de archivos de test).
 - **Por qué importa:** Un test que existe pero no ejecuta el código no protege de nada: la cobertura muestra qué partes quedan sin verificar.
-- **Tu resultado:** **99.5%** de líneas cubiertas · fuente: artefacto: coverage/coverage-summary.json; artefacto: coverage/lcov.info; artefacto: coverage.json (frontend-vue 99.5%, backend-express 99.1%, frontend-react 99.6%, backend-fastapi 100.0%) _(mínimo 80% de líneas)_
+- **Tu resultado:** **99.4%** de líneas cubiertas · fuente: artefacto: coverage/coverage-summary.json; artefacto: coverage/lcov.info; artefacto: coverage.json (frontend-vue 99.5%, backend-express 99.1%, frontend-react 99.3%, backend-fastapi 100.0%) _(mínimo 80% de líneas)_
 
 ### 15. Endpoints del backend (EP) — OK
 
@@ -148,11 +148,11 @@ _Cumple **todos** los criterios del semáforo: no hay nada que arreglar para apr
 
 ## 6. Actividad en clase y fuera de clase
 
-> Se consideran las **27 clases** del período (miércoles y viernes, según `config/constancia.json`; feriados y semanas sin clase descontados). Para cada alumno se muestra la actividad **en cada clase** y también la actividad **fuera de los días de clase** (fines de semana u otros días). `Commits` = commits de trabajo (no-merge); `Merges` = merges de PR (también son push). Los días sin actividad dicen **sin actividad**.
+> Se consideran las **28 clases** del período (miércoles y viernes, según `config/constancia.json`; feriados y semanas sin clase descontados). Para cada alumno se muestra la actividad **en cada clase** y también la actividad **fuera de los días de clase** (fines de semana u otros días). `Commits` = commits de trabajo (no-merge); `Merges` = merges de PR (también son push). Los días sin actividad dicen **sin actividad**.
 
 ### Mateo Gomez
 
-**10/27 clases con actividad** · total del período: 16 commits · 8 merges
+**10/28 clases con actividad** · total del período: 16 commits · 8 merges
 
 | Fecha | Actividad | Repositorios | Commits / merges |
 |---|:--:|---|--:|
@@ -183,6 +183,7 @@ _Cumple **todos** los criterios del semáforo: no hay nada que arreglar para apr
 | 2026-11-06 | No | sin actividad | 0 / 0 |
 | 2026-11-11 | **Sí** | dungeon-crawler | 2 / 2 |
 | 2026-11-13 | No | sin actividad | 0 / 0 |
+| 2026-11-18 | No | sin actividad | 0 / 0 |
 
 **Fuera de clase:** 5 fecha(s) con actividad · 22 commits · 8 merges
 
